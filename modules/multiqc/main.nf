@@ -1,26 +1,37 @@
 process MULTIQC {
-    
+    label 'short_serial'
+
     conda "${moduleDir}/environment.yml"
     container "${ workflow.containerEngine == 'singularity' && !task.ext.singularity_pull_docker_container ?
-        'https://depot.galaxyproject.org/singularity/multiqc:1.21--pyhdfd78af_0' :
-        'quay.io/biocontainers/multiqc:1.21--pyhdfd78af_0' }"
+        'https://depot.galaxyproject.org/singularity/multiqc:1.23--pyhdfd78af_0' :
+        'quay.io/biocontainers/multiqc:1.23--pyhdfd78af_0' }"
 
     input:
-    path('*')
-    path(config)
-    path(logo)
+    path  multiqc_files, stageAs: '?/*'
+    path(multiqc_config)
+    path(multiqc_logo)
 
     output:
-    path('*multiqc_report.html'), emit: html
-    path("versions.yml"), emit: versions
+    path '*multiqc*.html'      , emit: report
+    path '*_plots'             , optional:true, emit: plots
+    path 'versions.yml'        , emit: versions
+
+    when:
+    task.ext.when == null || task.ext.when
 
     script:
     def args = task.ext.args ?: ''
-    def prefix = task.ext.prefix ?: ''
-
+    def config = multiqc_config ? "--config $multiqc_config" : ''
+    def logo = multiqc_logo ? /--cl-config 'custom_logo: "${multiqc_logo}"'/ : ''
+    def prefix = task.ext.prefix ?: "${params.run_name}_multiqc_report"
     """
-
-    multiqc -n ${prefix}_multiqc_report $args .
+    multiqc \\
+        -n $prefix \\
+        --force \\
+        $args \\
+        $config \\
+        $logo \\
+        .
 
     cat <<-END_VERSIONS > versions.yml
     "${task.process}":

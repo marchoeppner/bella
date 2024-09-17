@@ -28,15 +28,15 @@ WorkflowMain.initialise(workflow, params, log)
 WorkflowPipeline.initialise(params, log)
 
 // TODO: Rename this to something matching this pipeline, e.g. "AMPLICONS"
-include { MAIN } from './workflows/main'
+include { SPREAD } from './workflows/spread'
 
 multiqc_report = Channel.from([])
 
 workflow {
     // TODO: Rename to something matching this pipeline (see above)
-    MAIN()
+    SPREAD()
 
-    multiqc_report = multiqc_report.mix(MAIN.out.qc).toList()
+    multiqc_report = multiqc_report.mix(SPREAD.out.qc).toList()
 }
 
 workflow.onComplete {

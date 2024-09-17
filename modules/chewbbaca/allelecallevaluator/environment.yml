@@ -1,7 +1,7 @@
-name: multiqc
+name: chewbbaca_allelecallevaluator
 channels:
   - conda-forge
   - bioconda
   - defaults
 dependencies:
-  - bioconda::multiqc=1.23
+  - bioconda::chewbbaca=3.3.4

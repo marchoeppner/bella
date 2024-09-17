@@ -1,7 +1,7 @@
-name: multiqc
+name: mlst
 channels:
   - conda-forge
   - bioconda
   - defaults
 dependencies:
-  - bioconda::multiqc=1.23
+  - bioconda::mlst=2.23.0
