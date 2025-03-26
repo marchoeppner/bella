@@ -2,16 +2,18 @@
 
 nextflow.enable.dsl = 2
 
-// TODO: Update this block with a description and the name of the pipeline
 /**
 ===============================
-Pipeline
+bio-raum/spread
 ===============================
 
-This Pipeline performs ....
+Surveillance for Pathogen Research and Epidemiological Analysis of Disease 
+
+This Pipeline performs cgMLST clustering given assembled bacterial genomes and an existing
+Chewbbaca-compatible clustering schema.
 
 ### Homepage / git
-git@github.com:marchoeppner/pipeline.git
+git@github.com:marchoeppner/pipelspreadine.git
 
 **/
 
@@ -20,20 +22,18 @@ params.version = workflow.manifest.version
 
 summary = [:]
 
-run_name = (params.run_name == false) ? "${workflow.sessionId}" : "${params.run_name}"
-
 WorkflowMain.initialise(workflow, params, log)
 
-// TODO: Rename this and the file under lib/ to something matching this pipeline (e.g. WorkflowAmplicons)
-WorkflowPipeline.initialise(params, log)
+WorkflowPipeline.initialise(workflow, params, log)
 
-// TODO: Rename this to something matching this pipeline, e.g. "AMPLICONS"
 include { SPREAD } from './workflows/spread'
 
-multiqc_report = Channel.from([])
-
 workflow {
-    // TODO: Rename to something matching this pipeline (see above)
+
+    run_name = (params.run_name == false) ? "${workflow.sessionId}" : "${params.run_name}"
+
+    multiqc_report = Channel.from([])
+
     SPREAD()
 
     multiqc_report = multiqc_report.mix(SPREAD.out.qc).toList()
@@ -98,14 +98,12 @@ workflow.onComplete {
             if (workflow.success && !params.skip_multiqc) {
                 mqcReport = multiqc_report.getVal()
                 if (mqcReport.getClass() == ArrayList) {
-                    // TODO: Update name of pipeline
-                    log.warn "[Pipeline] Found multiple reports from process 'multiqc', will use only one"
+                    log.warn "[bio-raum/spread] Found multiple reports from process 'multiqc', will use only one"
                     mqcReport = mqcReport[0]
                 }
             }
         } catch (all) {
-            // TODO: Update name of pipeline
-            log.warn '[PipelineName] Could not attach MultiQC report to summary email'
+            log.warn '[bio-raum/spread] Could not attach MultiQC report to summary email'
         }
 
         smailFields = [ email: params.email, subject: subject, emailText: emailText,

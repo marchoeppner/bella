@@ -1,24 +1,26 @@
 // Modules
-include { INPUT_CHECK }                 from '../modules/input_check'
+include { INPUT_CHECK }                 from './../modules/input_check'
 include { CHEWBBACA_ALLELECALL }        from './../modules/chewbbaca/allelecall'
 include { REPORTREE }                   from './../modules/reportree'
 include { MULTIQC }                     from './../modules/multiqc'
 include { CUSTOM_DUMPSOFTWAREVERSIONS } from './../modules/custom/dumpsoftwareversions'
 
-// Subworkflows
-ch_multiqc_config = params.multiqc_config   ? Channel.fromPath(params.multiqc_config, checkIfExists: true).collect() : Channel.value([])
-ch_multiqc_logo   = params.multiqc_logo     ? Channel.fromPath(params.multiqc_logo, checkIfExists: true).collect() : Channel.value([])
-
-samplesheet         = params.input ? Channel.fromPath(params.input, checkIfExists:true ).collect() : Channel.from([])
-ch_chewie_schema    = params.schema ? Channel.fromPath(params.schema, checkIfExists: true).collect() : Channel.from([])
-ch_metadata         = params.metadata ? Channel.fromPath(params.metadata, checkIfExists: true).collect() : Channel.from([])
-
-ch_versions = Channel.from([])
-multiqc_files = Channel.from([])
-
 workflow SPREAD {
- 
+
     main:
+
+    // Subworkflows
+    ch_multiqc_config   = params.multiqc_config   ? Channel.fromPath(params.multiqc_config, checkIfExists: true).collect() : Channel.value([])
+    ch_multiqc_logo     = params.multiqc_logo     ? Channel.fromPath(params.multiqc_logo, checkIfExists: true).collect() : Channel.value([])
+
+    samplesheet         = params.input ? Channel.fromPath(params.input, checkIfExists:true ).collect() : Channel.from([])
+    ch_chewie_schema    = params.schema ? Channel.fromPath(params.schema, checkIfExists: true).collect() : Channel.from([])
+
+    ch_nomenclature     = params.nomenclature ? Channel.fromPath(params.nomenclature, checkIfExists: true).collect() : Channel.from(false)
+    ch_metadata         = params.metadata ? Channel.fromPath(params.metadata, checkIfExists: true).collect() : Channel.from(false)
+
+    ch_versions = Channel.from([])
+    multiqc_files = Channel.from([])
 
     INPUT_CHECK(samplesheet)
 
@@ -37,7 +39,10 @@ workflow SPREAD {
     ch_versions = ch_versions.mix(CHEWBBACA_ALLELECALL.out.versions)
 
     REPORTREE(
-        CHEWBBACA_ALLELECALL.out.report
+        CHEWBBACA_ALLELECALL.out.profile,
+        ch_nomenclature,
+        ch_metadata
+
     )
     ch_versions = ch_versions.mix(REPORTREE.out.versions)
     

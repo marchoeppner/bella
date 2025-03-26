@@ -18,13 +18,13 @@ workflow INPUT_CHECK {
 
 // Function to get list of [ meta, assembly ]
 def fastq_channel(LinkedHashMap row) {
-    meta = [:]
+    def meta = [:]
     meta.sample_id    = row.sample_id
 
     if (!file(row.fasta).exists()) {
         exit 1, "ERROR: Please check input samplesheet -> the assembly does not exist!\n${row.fasta}"
     }
   
-    array = [ meta, file(row.fasta) ]
+    def array = [ meta, file(row.fasta) ]
     return array
 }

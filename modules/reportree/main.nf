@@ -1,28 +1,36 @@
 process REPORTREE {
-    tag "${db}"
+    tag "${meta.sample_id}"
 
     label 'short_serial'
 
-    conda "${moduleDir}/environment.yml"
-    container "docker://insapathogenomics/reportree:v2.0.2"
+    container "docker://mhoeppner/reportree:2.5.3"
 
     input:
     tuple val(meta), path(alleles)
+    val(nomenclature)
+    val(metadata)
 
     output:
-    tuple val(meta), path('*mlst.tsv')  , emit: report
-    path('versions.yml')                , emit: versions
+    tuple val(meta), path('*partitions_summary.tsv')    , emit: summary
+    tuple val(meta), path('partitions.tsv')             , emit: partitions
+    tuple val(meta), path('metrics.tsv')                , emit: metrics
+    tuple val(meta), path('*nomenclature_changes.tsv')  , optional: true, emit: nomenclature_changes
+    tuple val(meta), path('*.tre')                      , optional: true, emit: newick
+    path('versions.yml')                                , emit: versions
 
     script:
 
     def args = task.ext.args ?: ''
     def prefix = task.ext.prefix ?: meta.sample_id
-
+    n = (nomenclature != false) ? "--nomenclature $nomenclature" : ""
+    m = (metadata != false) ? "--metadta $metadata" : ""
+    
     """
     reportree.py \\
     $args \\
     -a $alleles \\
-    -out $prefix \\
+    $n $m \\
+    -out $prefix 2> /dev/null
 
     cat <<-END_VERSIONS > versions.yml
     "${task.process}":
