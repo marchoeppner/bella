@@ -1,5 +1,4 @@
-process CHEWBBACA_DOWNLOADSCHEMA {
-    maxForks 1
+process CHEWBBACA_PREPEXTERNALSCHEMA {
 
     tag "${meta.sample_id}"
 
@@ -11,10 +10,10 @@ process CHEWBBACA_DOWNLOADSCHEMA {
         'quay.io/biocontainers/chewbbaca:3.3.4--pyhdfd78af_0' }"
 
     input:
-    tuple val(meta), val(species_id), val(schema_id)
+    tuple val(meta), path(schema), path(filter)
 
     output:
-    tuple val(meta), path('*cgMLST*')   , emit: schema
+    tuple val(meta), path('*EFSA*')     , emit: filtered_schema
     path('versions.yml')                , emit: versions
 
     script:
@@ -22,10 +21,11 @@ process CHEWBBACA_DOWNLOADSCHEMA {
     def args = task.ext.args ?: ''
 
     """
-    chewBBACA.py DownloadSchema \\
-    -sp $species_id \\
-    -sc $schema_id \\
-    -o . $args
+    chewBBACA.py PrepExternalSchema \\
+    -g ${schema} \\
+    --gl $filter \\
+    --cpu ${task.cpus} \\
+    -o ${meta.sample_id}_EFSA $args
 
     cat <<-END_VERSIONS > versions.yml
     "${task.process}":

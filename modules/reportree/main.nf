@@ -31,7 +31,7 @@ process REPORTREE {
     def args = task.ext.args ?: ''
     def prefix = task.ext.prefix ?: meta.sample_id
     n = (nomenclature != false) ? "--nomenclature-file $nomenclature" : ""
-    m = (metadata != false) ? "--metadta $metadata" : ""
+    m = (metadata != false) ? "--metadata $metadata" : ""
     
     """
     reportree.py \\

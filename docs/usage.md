@@ -4,8 +4,6 @@
 
 [Pipeline version](#specifying-pipeline-version)
 
-[Resources](#resources)
-
 ## Basic execution
 
 Please see our [installation guide](installation.md) to learn how to set up this pipeline first. 
@@ -15,7 +13,7 @@ A basic execution of the pipeline looks as follows:
 a) Without a site-specific config file
 
 ```bash
-nextflow run marchoeppner/gabi -profile singularity --input samples.csv \\
+nextflow run marchoeppner/spread -profile singularity --input samples.tsv \\
 --reference_base /path/to/references \\
 --run_name pipeline-test
 ```
@@ -37,7 +35,7 @@ Additional software provisioning tools as described [here](https://www.nextflow.
 b) with a site-specific config file
 
 ```bash
-nextflow run marchoeppner/gabi -profile lsh --input samples.csv \\
+nextflow run marchoeppner/gabi -profile lsh --input samples.tsv \\
 --run_name pipeline-test 
 ```
 
@@ -53,18 +51,4 @@ nextflow run marchoeppner/pipeline -profile lsh -r 1.0 <other options here>
 
 The `-r` option specifies a github [release tag](https://github.com/marchoeppner/gabi/releases) or branch, so could also point to `main` for the very latest code release. Please note that every major release of this pipeline (1.0, 2.0 etc) comes with a new reference data set, which has the be [installed](installation.md) separately.
 
-## Resources
-
-The following options can be set to control resource usage outside of a site-specific [config](https://github.com/marchoeppner/nf-configs) file.
-
-### `--max_cpus` [ default = 16]
-
-The maximum number of cpus a single job can request. This is typically the maximum number of cores available on a compute node or your local (development) machine. 
-
-### `--max_memory` [ default = 128.GB ]
-
-The maximum amount of memory a single job can request. This is typically the maximum amount og RAM available on a compute node or your local (development) machine. Typically it is advisable to set this a little lower than the maximum amount of RAM to prevent the machine from swapping. 
-
-### `--max_time`[ default = 240.h ]
-
-The maximum allowed run/wall time a single job can request. This is mostly relevant for environments where run time is restricted, such as in a computing cluster with active resource manager or possibly some cloud environments.  
+## 

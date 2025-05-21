@@ -21,6 +21,8 @@ git@github.com:marchoeppner/pipelspreadine.git
 params.version = workflow.manifest.version
 
 include { SPREAD }              from './workflows/spread'
+include { BUILD_REFERENCES }    from './workflows/build_references'
+
 include { paramsSummaryLog }    from 'plugin/nf-schema'
 
 workflow {
@@ -33,7 +35,11 @@ workflow {
     WorkflowMain.initialise(workflow, params, log)
     WorkflowPipeline.initialise(workflow, params, log)
 
-    SPREAD()
+    if (params.build_references) {
+        BUILD_REFERENCES()
+    } else {
+        SPREAD()
+    }
 
     def emailFields = [:]
     emailFields['version'] = workflow.manifest.version

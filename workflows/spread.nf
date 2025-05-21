@@ -17,7 +17,7 @@ workflow SPREAD {
     ch_chewie_schema    = params.schema ? Channel.fromPath(params.schema, checkIfExists: true).collect() : Channel.from([])
 
     ch_nomenclature     = params.nomenclature ? file(params.nomenclature, checkIfExists: true) : Channel.from(false)
-    ch_metadata         = params.metadata ? Channel.fromPath(params.metadata, checkIfExists: true).collect() : Channel.from(false)
+    ch_metadata         = params.metadata ? file(params.metadata, checkIfExists: true) : Channel.from(false)
 
     ch_versions = Channel.from([])
     multiqc_files = Channel.from([])
