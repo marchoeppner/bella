@@ -4,12 +4,12 @@
 
 workflow INPUT_CHECK {
     take:
-    samplesheet // file: /path/to/samplesheet.csv
+    samplesheet // file: /path/to/samplesheet.tsv
 
     main:
     samplesheet
-        .splitCsv(header:true, sep:',')
-        .map { row -> fastq_channel(row) }
+        .splitCsv(header:true, sep:'\t')
+        .map { row -> assembly_channel(row) }
         .set { assembly }
 
     emit:
@@ -17,14 +17,14 @@ workflow INPUT_CHECK {
 }
 
 // Function to get list of [ meta, assembly ]
-def fastq_channel(LinkedHashMap row) {
+def assembly_channel(LinkedHashMap row) {
     def meta = [:]
-    meta.sample_id    = row.sample_id
+    meta.sample_id    = row.sample
 
-    if (!file(row.fasta).exists()) {
-        exit 1, "ERROR: Please check input samplesheet -> the assembly does not exist!\n${row.fasta}"
+    if (!file(row.assembly).exists()) {
+        exit 1, "ERROR: Please check input samplesheet -> the assembly does not exist!\n${row.assembly}"
     }
   
-    def array = [ meta, file(row.fasta) ]
+    def array = [ meta, file(row.assembly) ]
     return array
 }

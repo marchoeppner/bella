@@ -16,7 +16,7 @@ workflow SPREAD {
     samplesheet         = params.input ? Channel.fromPath(params.input, checkIfExists:true ).collect() : Channel.from([])
     ch_chewie_schema    = params.schema ? Channel.fromPath(params.schema, checkIfExists: true).collect() : Channel.from([])
 
-    ch_nomenclature     = params.nomenclature ? Channel.fromPath(params.nomenclature, checkIfExists: true).collect() : Channel.from(false)
+    ch_nomenclature     = params.nomenclature ? file(params.nomenclature, checkIfExists: true) : Channel.from(false)
     ch_metadata         = params.metadata ? Channel.fromPath(params.metadata, checkIfExists: true).collect() : Channel.from(false)
 
     ch_versions = Channel.from([])
@@ -59,5 +59,5 @@ workflow SPREAD {
     )
 
     emit:
-    qc = MULTIQC.out.html
+    qc = MULTIQC.out.report
 }
