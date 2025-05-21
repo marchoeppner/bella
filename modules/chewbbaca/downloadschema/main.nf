@@ -14,7 +14,7 @@ process CHEWBBACA_DOWNLOADSCHEMA {
     tuple val(meta), val(species_id), val(schema_id)
 
     output:
-    tuple val(meta), path('*cgMLST*')   , emit: schema
+    tuple val(meta), path('download/*')   , emit: schema
     path('versions.yml')                , emit: versions
 
     script:
@@ -25,7 +25,7 @@ process CHEWBBACA_DOWNLOADSCHEMA {
     chewBBACA.py DownloadSchema \\
     -sp $species_id \\
     -sc $schema_id \\
-    -o . $args
+    -o download $args
 
     cat <<-END_VERSIONS > versions.yml
     "${task.process}":
