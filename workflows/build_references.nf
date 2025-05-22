@@ -30,7 +30,7 @@ workflow BUILD_REFERENCES {
         ch_filters
     ).set { schema_with_filter }
 
-    /* Reformat the now filtered schema to work with Chewbbaca
+    /* Reformat the schema to limit loci to the filter list
     We do this to use the built-in filter function instead of
     manually filtering the locus list
     */
