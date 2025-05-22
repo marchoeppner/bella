@@ -6,8 +6,8 @@ process CHEWBBACA_PREPEXTERNALSCHEMA {
 
     conda "${moduleDir}/environment.yml"
     container "${ workflow.containerEngine == 'singularity' && !task.ext.singularity_pull_docker_container ?
-        'https://depot.galaxyproject.org/singularity/chewbbaca:3.3.4--pyhdfd78af_0' :
-        'quay.io/biocontainers/chewbbaca:3.3.4--pyhdfd78af_0' }"
+        'https://depot.galaxyproject.org/singularity/chewbbaca:3.3.10--pyhdfd78af_0' :
+        'quay.io/biocontainers/chewbbaca:3.3.10--pyhdfd78af_0' }"
 
     input:
     tuple val(meta), path(schema), path(filter)
@@ -19,13 +19,13 @@ process CHEWBBACA_PREPEXTERNALSCHEMA {
     script:
 
     def args = task.ext.args ?: ''
-
+    def sname = schema.getBaseName() + "_EFSA"
     """
     chewBBACA.py PrepExternalSchema \\
     -g ${schema} \\
     --gl $filter \\
     --cpu ${task.cpus} \\
-    -o ${meta.sample_id}_EFSA $args
+    -o ${sname} $args
 
     cat <<-END_VERSIONS > versions.yml
     "${task.process}":

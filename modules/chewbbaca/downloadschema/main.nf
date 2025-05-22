@@ -7,14 +7,14 @@ process CHEWBBACA_DOWNLOADSCHEMA {
 
     conda "${moduleDir}/environment.yml"
     container "${ workflow.containerEngine == 'singularity' && !task.ext.singularity_pull_docker_container ?
-        'https://depot.galaxyproject.org/singularity/chewbbaca:3.3.4--pyhdfd78af_0' :
-        'quay.io/biocontainers/chewbbaca:3.3.4--pyhdfd78af_0' }"
+        'https://depot.galaxyproject.org/singularity/chewbbaca:3.3.10--pyhdfd78af_0' :
+        'quay.io/biocontainers/chewbbaca:3.3.10--pyhdfd78af_0' }"
 
     input:
     tuple val(meta), val(species_id), val(schema_id)
 
     output:
-    tuple val(meta), path('download/*')   , emit: schema
+    tuple val(meta), path('*MLST*')     , emit: schema
     path('versions.yml')                , emit: versions
 
     script:
@@ -26,6 +26,8 @@ process CHEWBBACA_DOWNLOADSCHEMA {
     -sp $species_id \\
     -sc $schema_id \\
     -o download $args
+
+    mv download/* . 
 
     cat <<-END_VERSIONS > versions.yml
     "${task.process}":

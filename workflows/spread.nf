@@ -14,16 +14,44 @@ workflow SPREAD {
     ch_multiqc_logo     = params.multiqc_logo     ? Channel.fromPath(params.multiqc_logo, checkIfExists: true).collect() : Channel.value([])
 
     samplesheet         = params.input ? Channel.fromPath(params.input, checkIfExists:true ).collect() : Channel.from([])
-    ch_chewie_schema    = params.schema ? Channel.fromPath(params.schema, checkIfExists: true).collect() : Channel.from([])
 
+    /*
+    Get the corect schema to use - either from a pre-configured species or as user-provided path
+    */
+    if (params.species) {
+        if (params.references.keySet().contains(params.species)) {
+            if (params.efsa) {
+                if (params.references[params.species].efsa) {
+                    ch_chewie_schema = Channel.fromPath(params.references[params.species].efsa)
+                } else {
+                    log.warn "No EFSA schema defined for ${params.species} - falling back to default schema."
+                    ch_chewie_schema = Channel.fromPath(params.references[params.species].db)
+                }
+            } else {
+                ch_chewie_schema = Channel.fromPath(params.references[params.species].db)
+            }
+        } else {
+            log.warn "Could not find a pre-configured schema for ${params.species}\nValid schemas are: ${params.references.keySet().join(' ')}\nExiting!"
+            System.exit(1)
+        }
+    } else {
+        ch_chewie_schema = params.schema ? Channel.fromPath(params.schema, checkIfExists: true).collect() : Channel.from([])
+    }
+    
     ch_nomenclature     = params.nomenclature ? file(params.nomenclature, checkIfExists: true) : Channel.from(false)
     ch_metadata         = params.metadata ? file(params.metadata, checkIfExists: true) : Channel.from(false)
 
     ch_versions = Channel.from([])
     multiqc_files = Channel.from([])
 
+    /*
+    Check that the samplesheet is valid
+    */
     INPUT_CHECK(samplesheet)
 
+    /*
+    Perform joint allele calling - this may be too slow for large data sets, may need adjusting
+    */
     CHEWBBACA_ALLELECALL(
         INPUT_CHECK.out.assembly.map { m,a ->
             a
@@ -38,6 +66,9 @@ workflow SPREAD {
     )
     ch_versions = ch_versions.mix(CHEWBBACA_ALLELECALL.out.versions)
 
+    /*
+    Use the matrix from chewbbaca to perform clustering 
+    */
     REPORTREE(
         CHEWBBACA_ALLELECALL.out.profile,
         ch_nomenclature,

@@ -16,7 +16,11 @@ class WorkflowPipeline {
             log.info "Pipeline requires a sample sheet as input (--input)"
             System.exit(1)
         }
-        if (!params.build_references && !params.schema) {
+        if (!params.build_references && params.species && params.schema) {
+            log.info "May only use one: --species or --schema\nExiting!"
+            System.exit(1)
+        }
+        if (!params.build_references && !params.species && !params.schema) {
             log.info "Must provide path to a valid Chewbbaca schema folder"
             System.exit(1)
         }
