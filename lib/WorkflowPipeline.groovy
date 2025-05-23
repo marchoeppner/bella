@@ -8,7 +8,8 @@ class WorkflowPipeline {
     // Check and validate parameters
     //
     public static void initialise( worfklow, params, log) {
-        if (!params.run_name) {
+         
+        if (params.input && !params.run_name) {
             log.info 'Must provide a run_name (--run_name)'
             System.exit(1)
         }
