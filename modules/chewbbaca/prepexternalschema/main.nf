@@ -1,6 +1,6 @@
 process CHEWBBACA_PREPEXTERNALSCHEMA {
 
-    tag "${meta.sample_id}"
+    tag "${meta.sample_id}|${filter}"
 
     label 'short_parallel'
 
@@ -10,10 +10,10 @@ process CHEWBBACA_PREPEXTERNALSCHEMA {
         'quay.io/biocontainers/chewbbaca:3.3.10--pyhdfd78af_0' }"
 
     input:
-    tuple val(meta), path(schema), path(filter)
+    tuple val(meta), path(schema), path(trn), path(filter)
 
     output:
-    tuple val(meta), path('*EFSA*')     , emit: filtered_schema
+    tuple val(meta), path('*_EFSA')      , emit: filtered_schema
     path('versions.yml')                , emit: versions
 
     script:
@@ -24,12 +24,13 @@ process CHEWBBACA_PREPEXTERNALSCHEMA {
     chewBBACA.py PrepExternalSchema \\
     -g ${schema} \\
     --gl $filter \\
+    --ptf ${trn} \\
     --cpu ${task.cpus} \\
     -o ${sname} $args
 
     cat <<-END_VERSIONS > versions.yml
     "${task.process}":
-        chewBBACA: \$(chewBBACA.py --version 2>&1 | sed -e "s/*.wersion: //g")
+        chewBBACA: \$(chewBBACA.py --version 2>&1 | sed -e "s/*.version: //g")
     END_VERSIONS
 
     """

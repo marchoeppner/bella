@@ -1,4 +1,4 @@
-process CHEWBBACA_ALLELECALL {
+process CHEWBBACA_ALLELECALL_INSTALL {
 
     tag "${meta.sample_id}"
 
@@ -10,20 +10,18 @@ process CHEWBBACA_ALLELECALL {
         'quay.io/biocontainers/chewbbaca:3.3.10--pyhdfd78af_0' }"
 
     input:
-    tuple val(meta), path(assemblies, stageAs: 'assemblies/')
-    path(db)
+    tuple val(meta), path(assemblies, stageAs: 'assemblies/'), path(db)
 
     output:
-    tuple val(meta), path(results)                          , emit: report
-    tuple val(meta), path("${results}/results_alleles.tsv") , emit: profile
-    path('versions.yml')                                    , emit: versions
+    tuple val(meta), path(db)                                   , emit: schema
+    path('versions.yml')                                        , emit: versions
 
     script:
 
     def args = task.ext.args ?: ''
     def prefix = task.ext.prefix ?: meta.sample_id
     def db_name = file(db).getSimpleName()
-    results = "results_${prefix}_${db_name}"
+    def results = "results_${prefix}_${db_name}"
 
     """
     chewBBACA.py AlleleCall \\

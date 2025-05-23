@@ -16,11 +16,14 @@ You can choose one of the following options:
 
 [Singularity](https://docs.sylabs.io/guides/3.11/admin-guide/)
 
+[Apptainer](https://apptainer.org/)
+
 [Podman](https://podman.io/docs/installation)
 
-[Conda](https://github.com/conda-forge/miniforge)
 
 The pipeline comes with simple pre-set profiles for all of these as described [here](usage.md); if you plan to use this pipeline regularly, consider adding your own custom profile to our [central repository](https://github.com/marchoeppner/nf-configs) to better leverage your available resources.
+
+Please note that this pipeline currently **does not work** with a package manager (conda, spack). This is because some of the dependencies (specifically ReporTree) are not yet available as self-contained conda packages.
 
 ## Installing the references
 

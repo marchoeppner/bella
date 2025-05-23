@@ -2,6 +2,7 @@
 include { INPUT_CHECK }                 from './../modules/input_check'
 include { CHEWBBACA_ALLELECALL }        from './../modules/chewbbaca/allelecall'
 include { REPORTREE }                   from './../modules/reportree'
+include { CHEWBBACA_JOINPROFILES }      from './../modules/chewbbaca/joinprofiles'
 include { MULTIQC }                     from './../modules/multiqc'
 include { CUSTOM_DUMPSOFTWAREVERSIONS } from './../modules/custom/dumpsoftwareversions'
 
@@ -53,24 +54,30 @@ workflow SPREAD {
     Perform joint allele calling - this may be too slow for large data sets, may need adjusting
     */
     CHEWBBACA_ALLELECALL(
-        INPUT_CHECK.out.assembly.map { m,a ->
-            a
-        }.collect()
-        .map { a ->
-            [
-                [ sample_id: "all"],
-                a
-            ]
-        },
-        ch_chewie_schema
+        INPUT_CHECK.out.assembly,
+        ch_chewie_schema.collect()
     )
     ch_versions = ch_versions.mix(CHEWBBACA_ALLELECALL.out.versions)
 
     /*
+    Join all the individual profiles into one for cluster analysis
+    */
+
+    CHEWBBACA_JOINPROFILES(
+        CHEWBBACA_ALLELECALL.out.profile.map { m,p ->
+            p
+        }.collect().map { ps ->
+            [
+                [ sample_id: "all"],
+                ps
+            ]
+        }
+    )
+    /*
     Use the matrix from chewbbaca to perform clustering 
     */
     REPORTREE(
-        CHEWBBACA_ALLELECALL.out.profile,
+        CHEWBBACA_JOINPROFILES.out.report,
         ch_nomenclature,
         ch_metadata
 

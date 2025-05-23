@@ -11,6 +11,13 @@ class WorkflowMain {
     //
     public static void initialise(workflow, params, log) {
         log.info header(workflow)
+
+
+        if (!workflow.containerEngine) {
+            log.warn "This pipeline cannot be used with Conda or Spack, sorry! Please use a supported container engine. Exiting..."
+            System.exit(1)
+        }
+
     }
 
     // TODO: Change name of the pipeline below
