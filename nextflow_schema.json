@@ -19,7 +19,7 @@
           "schema": "assets/schema_input.json",
           "mimetype": "text/csv",
           "pattern": "^\\S+\\.csv$",
-          "description": "Path to comma-separated file containing information about the samples in the experiment.",
+          "description": "Path to tab-separated file containing information about the samples in the experiment.",
           "help_text": "You will need to create a design file with information about the samples in your experiment before running the pipeline. Use this parameter to specify its location. It has to be a comma-separated file with 3 columns, and a header row.",
           "fa_icon": "fas fa-file-csv"
         },
@@ -58,42 +58,59 @@
   ],
   "properties": {
     "reference_base": {
-      "type": "string"
+      "type": "string",
+      "fa_icon": "fas fa-folder-open",
+      "description": "The location where the pipeline references have been installed to"
     },
     "reference_version": {
-      "type": "integer",
+      "type": "string",
       "default": 1,
-      "hidden": true
+      "hidden": true,
+      "fa_icon": "fas fa-filter"
     },
     "build_references": {
-      "type": "boolean"
+      "type": "boolean",
+      "description": "Flag to start reference installation"
     },
     "schema": {
-      "type": "string"
+      "type": "string",
+      "fa_icon": "fas fa-folder-open",
+      "description": "A chewbbaca schema folder"
     },
     "species_id": {
       "type": "string",
-      "hidden": true
+      "hidden": true,
+      "fa_icon": "fas fa-filter"
     },
     "efsa": {
-      "type": "string"
+      "type": "boolean",
+      "fa_icon": "fas fa-filter",
+      "description": "Flag to use EFSA schema, if available"
     },
     "metadata": {
-      "type": "string"
+      "type": "string",
+      "fa_icon": "fas fa-file-import",
+      "description": "ReporTree metadata file in TSV format."
     },
     "nomenclature": {
-      "type": "string"
+      "type": "string",
+      "fa_icon": "fas fa-file-import",
+      "description": "ReporTree nomenclature file in TSV format"
     },
     "partitions": {
       "type": "string",
-      "default": "3,7,9,15,20,25"
+      "default": "3,7,9,15,20,25",
+      "fa_icon": "fas fa-file-import",
+      "description": "List of partitions to analyze"
     },
     "logo": {
       "type": "string",
       "default": "/home/mhoeppner/git/spread/assets/pipelinelogo.png"
     },
     "run_name": {
-      "type": "string"
+      "type": "string",
+      "fa_icon": "fas fa-filter",
+      "description": "A descriptive name for this run"
     },
     "plaintext_email": {
       "type": "boolean",
@@ -129,6 +146,13 @@
       "type": "string",
       "default": "https://raw.githubusercontent.com/bio-raum/nf-configs/main",
       "hidden": true
+    },
+    "reportree_loci_called": {
+      "type": "number",
+      "default": 0.95,
+      "fa_icon": "fas fa-filter",
+      "description": "Fraction of usable loci required for a sample to be included"
     }
-  }
+  },
+  "required": ["reference_base", "reference_version", "run_name"]
 }

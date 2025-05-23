@@ -14,8 +14,8 @@ process CHEWBBACA_DOWNLOADSCHEMA {
     tuple val(meta), val(species_id), val(schema_id)
 
     output:
-    tuple val(meta), path('*MLST*')     , emit: schema
-    path('versions.yml')                , emit: versions
+    tuple val(meta), path('*MLST*'), path("*MLST*/*.trn")   , emit: schema
+    path('versions.yml')                                    , emit: versions
 
     script:
 

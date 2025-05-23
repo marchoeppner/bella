@@ -83,6 +83,22 @@ sample_0534	MyCluster_35	MyCluster_82	MyCluster_65
 sample_0544	MyCluster_35	MyCluster_82	MyCluster_65
 ```
 
+Alternatively, you can provide a simpler format without information on the partition levels like so:
+
+```TSV
+sequence	group
+sample_0241	Lm_1
+sample_0212	Lm_1
+sample_0168	Lm_1
+sample_0253	Lm_1
+sample_0613	Lm_1
+sample_0652	Lm_2
+sample_0644	Lm_2
+sample_0651	Lm_2
+```
+
+Note that ReporTree will always fall back to the built-in nomenclature system when it encounters new clusters. 
+
 Some more information on how nomenclatures in ReporTree work [here](https://github.com/insapathogenomics/ReporTree/wiki/3.-Nomenclature).
 
 ### `--metadata` [defualt = null]

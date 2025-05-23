@@ -1,4 +1,8 @@
-# Pipeline
+# SPREAD Pipeline
+
+This pipeline takes assembled bacterial genomes as input and performs a clustering analysis to support epidemiological inqueries into outbreak scenarios. 
+
+SPREAD is primarily meant to be used with foodborne pathogens, such as Campylobacter, E. coli, Listeria monocytogenes and Salmonella enteria (i.e. it comes with allele schemas for these four species). Other species are supported of course, if you provide a compatible schema database (Chewbbaca v3.3x).
 
 ## Documentation 
 
