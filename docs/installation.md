@@ -36,7 +36,7 @@ nextflow run marchoeppner/spread -profile singularity \\
 --reference_base /path/to/references
 ```
 
-where `/path/to/references` could be something like `/data/pipelines/references` or whatever is most appropriate on your system. 
+where `/path/to/references` could be something like `/data/pipelines/references` or whatever is most appropriate on your system. You can skip that argument if you are using a site-specific config file where you have already set this location. 
 
 If you do not have singularity on your system, you can also specify docker, podman or conda for software provisioning - see the [usage information](usage.md).
 
