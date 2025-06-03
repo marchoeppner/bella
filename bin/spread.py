@@ -7,7 +7,7 @@ import json
 import getpass
 import argparse
 import random
-
+import colorsys 
 
 parser = argparse.ArgumentParser(description="Script options")
 parser.add_argument("--input", help="An input option")
@@ -26,6 +26,20 @@ status = {
     "fail": "fail",
     "missing": "missing"
 }
+
+def generate_distinct_colors(n): 
+    colors = [] 
+    for i in range(n): 
+        # Generate a color in HSL 
+        hue = i / n  # evenly spaced hues 
+        lightness = 0.5  # fixed lightness 
+        saturation = 1.0  # full saturation 
+        rgb = colorsys.hls_to_rgb(hue, lightness, saturation) 
+        # Convert from [0, 1] to [0, 255] and round 
+        rgb = tuple(int(c * 255) for c in rgb) 
+        colors.append('#%02x%02x%02x' % rgb)
+    return colors 
+
 
 def main(json_file, template, output, version, call, wd, distance):
 
@@ -49,20 +63,24 @@ def main(json_file, template, output, version, call, wd, distance):
     if distance in jdata["clusters"]:
         samples = jdata["clusters"][distance]
         sample_color = {}
-        clusters = {}
+        cluster_color = {}
         cluster_samples = {}
+        unique_clusters = set(samples.values())
+        color_map = generate_distinct_colors(len(unique_clusters))
+
         for sample, cluster in samples.items():
-            if cluster not in clusters:
-                color = "%06x" % random.randint(0, 0xFFFFFF)
-                clusters[cluster] = color
-            sample_color[sample] = clusters[cluster]
+            if cluster not in cluster_color:
+                color = color_map.pop()
+                cluster_color[cluster] = color
+            sample_color[sample] = cluster_color[cluster]
             summary[sample] = { "cluster": cluster , "distance": distance, "color": sample_color[sample] }
             if cluster in cluster_samples:
                 cluster_samples[cluster].append(sample)
             else:
                 cluster_samples[cluster] = [ sample ]
+
         data["sample_color"] = sample_color
-        data["cluster_color"] = clusters
+        data["cluster_color"] = cluster_color
         data["cluster_samples"] = cluster_samples
 
     for locus in jdata["loci_report"]:
