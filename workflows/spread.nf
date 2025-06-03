@@ -9,6 +9,13 @@ include { CHEWBBACA_ALLELECALLEVALUATOR }   from './../modules/chewbbaca/allelec
 include { SUMMARY }                         from './../modules/helper/summary'
 include { REPORT }                          from './../modules/helper/report'
 
+/*
+Include sub workflows
+*/
+include { CHEWBBACA_PARALLEL }              from './../subworkflows/chewbbaca_parallel'
+include { CHEWBBACA_SERIAL }                from './../subworkflows/chewbbaca_serial'
+
+
 workflow SPREAD {
 
     main:
@@ -51,37 +58,44 @@ workflow SPREAD {
 
     ch_versions = Channel.from([])
     multiqc_files = Channel.from([])
+    
+    def partitions = params.partitions
 
     /*
     Check that the samplesheet is valid
     */
     INPUT_CHECK(samplesheet)
 
-    /*
-    Perform joint allele calling - this may be too slow for large data sets, may need adjusting
-    */
-    CHEWBBACA_ALLELECALL(
-        INPUT_CHECK.out.assembly.map { m,a ->
-            [
-                [ sample_id: params.run_name],
-                a
-            ]
-        }.groupTuple().collect(),
-        ch_chewie_schema.collect()
-    )
-    ch_versions = ch_versions.mix(CHEWBBACA_ALLELECALL.out.versions)
+    if (params.parallel_calling) {
 
-    // Evaluate the call performance
-    CHEWBBACA_ALLELECALLEVALUATOR(
-        CHEWBBACA_ALLELECALL.out.report,
-        ch_chewie_schema
-    )
-
+        /*
+        Run chewbbaca allele calling in parallel on each assembly and then merge
+        This option is useful on very large data sets on a distributed compute infrastructure
+        */
+        CHEWBBACA_PARALLEL(
+            INPUT_CHECK.out.assembly,
+            ch_chewie_schema.collect()
+        )
+        ch_matrix = CHEWBBACA_PARALLEL.out.matrix
+        ch_versions = ch_versions.mix(CHEWBBACA_PARALLEL.out.versions)
+    } else {
+        /*
+        Combine all assemblies and perform joint allele calling
+        This option is preferrable on smaller data sets
+        */
+        CHEWBBACA_SERIAL(
+            INPUT_CHECK.out.assembly,
+            ch_chewie_schema.collect()
+        )
+        ch_matrix = CHEWBBACA_SERIAL.out.matrix
+        ch_versions = ch_versions.mix(CHEWBBACA_SERIAL.out.versions)
+    }
+    
     /*
     Use the matrix from chewbbaca to perform clustering 
     */
     REPORTREE(
-        CHEWBBACA_ALLELECALL.out.profile,
+        ch_matrix,
         ch_nomenclature,
         ch_metadata
 
@@ -113,14 +127,15 @@ workflow SPREAD {
     // Summarize results as JSON
     SUMMARY(
         ch_summary_input,
-        params.partitions
+        partitions
     )
     ch_versions = ch_versions.mix(SUMMARY.out.versions)
 
     // Generate HTML report
     REPORT(
         SUMMARY.out.json,
-        ch_spread_template
+        ch_spread_template,
+        ch_distance
     )
     ch_versions = ch_versions.mix(REPORT.out.versions)
 

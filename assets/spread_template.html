@@ -92,6 +92,34 @@ The summary table with all key metrics per sample
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
 
 <h2>Summary</h2>
+<table class="general">
+    <tr>
+        <th scope="col">Sample</th>
+        <th scope="col">Status</th>
+        <th scope="col" colspan=3><div class="tooltip">Chewbbaca<span class="tooltiptext">Chewbbaca allele calling</span></div></th>
+        <th scope="col" colspan=2><div class="tooltip">ReporTree Cluster</span></div></th>
+    </tr>
+    <tr class="row">
+        <th scope="subcol-inactive"></th>
+        <th scope="subcol-inactive"></th>
+        <th scope="subcol-inactive">Called</th>
+        <th scope="subcol-inactive">Missing</th>
+        <th scope="subcol-inactive">% called</th>
+        <th scope="subcol-inactive">Distance</th>
+        <th scope="subcol-inactive">Cluster</th>
+    </tr>
+    {% for sample,data in summary.items() %}
+        <tr>
+            <td scope="sample-id">{{sample}}</td>
+            <td scope="{{data.status}}">{{data.status}}</td>
+            <td>{{data.called}}</td>
+            <td>{{data.missing}}</td>
+            <td>{{data.pct_called}}</td>
+            <td>{{data.distance}}</td>
+            <td bgcolor="#{{data.color}}">{{data.cluster}}</td>
+        </tr>
+    {% endfor %}
+</table>
 
 <p></p>
 <a href="#navigation">top</a>
@@ -113,6 +141,7 @@ The hamming distances
 
 <div id="tree"></div>
 <h2>Minimum spanning tree</h2>
+A minimum spanning tree calculated by <a href="https://github.com/insapathogenomics/ReporTree" target="_new">ReporTree</a>. Clusters are defined based on a pre-set distance of {{cluster_distance}}.
 
 <script src="https://unpkg.com/@phylocanvas/phylocanvas.gl@latest/dist/bundle.min.js"></script>
 
@@ -128,11 +157,17 @@ The hamming distances
         showLabels: true,
         showBranchLengths: true,
         showLeafLabels: true,
-        fontSize: 10
+        fontSize: 10,
+        styles: {
+            {% for sample,color in cluster_color.items() %}
+                {{sample}}: { fillColour: "#{{color}}", label: "{{sample}}" },
+            {% endfor %}
+        },
     }
   );
 </script>
 </div>
+
 
 <a href="https://achtman-lab.github.io/GrapeTree/MSTree_holder.html" target="_new">GrapeTree</a>
 

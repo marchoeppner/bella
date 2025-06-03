@@ -10,6 +10,7 @@ process REPORT {
     input:
     tuple val(meta), path(json)
     path(template)
+    val(cluster_distance)
 
     output:
     path('*.html')          , emit: html
@@ -30,6 +31,7 @@ process REPORT {
     --version $version \
     --call '$call' \
     --wd $wd \
+    --distance $cluster_distance \
     $args \
     --output $result
 

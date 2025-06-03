@@ -140,6 +140,8 @@ def main(yaml_file, schema, partitions, output):
             matrix["tree"] = "\n".join(lines)
         elif re.search(".partitions.tsv", file):
             matrix["clusters"] = parse_partitions(lines, partitions)
+        elif re.search(".loci_report.tsv", file):
+            matrix["loci_report"] = parse_tabular(lines)
 
     with open(output, "w") as fo:
         json.dump(matrix, fo, indent=4, sort_keys=True)

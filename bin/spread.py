@@ -6,6 +6,7 @@ import pandas as pd
 import json
 import getpass
 import argparse
+import random
 
 
 parser = argparse.ArgumentParser(description="Script options")
@@ -14,6 +15,7 @@ parser.add_argument("--template", help="A JINJA2 template")
 parser.add_argument("--version", help="Pipeline version")
 parser.add_argument("--call", help="Command line call")
 parser.add_argument("--wd", help="work directory")
+parser.add_argument("--distance", help="Distance for clustering")
 parser.add_argument("--output")
 
 args = parser.parse_args()
@@ -25,7 +27,7 @@ status = {
     "missing": "missing"
 }
 
-def main(json_file, template, output, version, call, wd):
+def main(json_file, template, output, version, call, wd, distance):
 
     data = {}
 
@@ -34,7 +36,7 @@ def main(json_file, template, output, version, call, wd):
     data["version"] = version
     data["call"] = call
     data["wd"] = wd
-
+    data["cluster_distance"] = distance
     data["summary"] = []
 
     with open(json_file) as f:
@@ -42,8 +44,42 @@ def main(json_file, template, output, version, call, wd):
         f.close
 
     data["nwk"] = jdata["tree"]
+    summary = {}
 
+    if distance in jdata["clusters"]:
+        samples = jdata["clusters"][distance]
+        cluster_color = {}
+        clusters = {}
+        for sample, cluster in samples.items():
+            if cluster not in clusters:
+                color = "%06x" % random.randint(0, 0xFFFFFF)
+                clusters[cluster] = color
+            cluster_color[sample] = clusters[cluster]
+            summary[sample] = { "cluster": cluster , "distance": distance, "color": cluster_color[sample] }
+        data["cluster_color"] = cluster_color
+
+    for locus in jdata["loci_report"]:
+        sample = locus["samples"]
+        summary[sample]["called"] = locus["called"]
+        summary[sample]["missing"] = locus["missing"]
+        summary[sample]["pct_called"] = locus["pct_called"]
+
+        pct_called = float(locus["pct_called"])
+        sample_status = status["missing"]
+        if (pct_called < 0.85 ):
+            sample_status = status["fail"]
+        elif (pct_called < 0.95):
+            sample_status = status["warn"]
+        else:
+            sample_status = status["pass"]
+
+        summary[sample]["status"] = sample_status
+
+    data["summary"] = summary
+    
     matrix = jdata["distance"]
+
+    
 
     #############
     # Plots
@@ -75,4 +111,4 @@ def main(json_file, template, output, version, call, wd):
 
 
 if __name__ == '__main__':
-    main(args.input, args.template, args.output, args.version, args.call, args.wd)
+    main(args.input, args.template, args.output, args.version, args.call, args.wd, args.distance)
