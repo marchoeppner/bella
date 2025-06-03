@@ -48,15 +48,22 @@ def main(json_file, template, output, version, call, wd, distance):
 
     if distance in jdata["clusters"]:
         samples = jdata["clusters"][distance]
-        cluster_color = {}
+        sample_color = {}
         clusters = {}
+        cluster_samples = {}
         for sample, cluster in samples.items():
             if cluster not in clusters:
                 color = "%06x" % random.randint(0, 0xFFFFFF)
                 clusters[cluster] = color
-            cluster_color[sample] = clusters[cluster]
-            summary[sample] = { "cluster": cluster , "distance": distance, "color": cluster_color[sample] }
-        data["cluster_color"] = cluster_color
+            sample_color[sample] = clusters[cluster]
+            summary[sample] = { "cluster": cluster , "distance": distance, "color": sample_color[sample] }
+            if cluster in cluster_samples:
+                cluster_samples[cluster].append(sample)
+            else:
+                cluster_samples[cluster] = [ sample ]
+        data["sample_color"] = sample_color
+        data["cluster_color"] = clusters
+        data["cluster_samples"] = cluster_samples
 
     for locus in jdata["loci_report"]:
         sample = locus["samples"]
