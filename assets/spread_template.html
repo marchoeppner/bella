@@ -389,7 +389,7 @@ A minimum spanning tree calculated by <a href="https://github.com/insapathogenom
     {% for cluster,samples in cluster_samples.items() %}
         {% if samples|length > 1 %}
 
-            <button class="collapsible" style="background-color: {{cluster_color[cluster]}};">{{cluster}}</button>
+            <button class="collapsible" style="background-color: {{cluster_color[cluster]}};">{{cluster}} (n={{samples|length}})</button>
             <div class="content">
                 <table class="hit-list">
                         {% for sample in samples %}
