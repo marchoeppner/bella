@@ -37,6 +37,7 @@ def generate_distinct_colors(n):
         rgb = colorsys.hls_to_rgb(hue, lightness, saturation) 
         # Convert from [0, 1] to [0, 255] and round 
         rgb = tuple(int(c * 255) for c in rgb) 
+        # and turn into a hex color
         colors.append('#%02x%02x%02x' % rgb)
     return colors 
 

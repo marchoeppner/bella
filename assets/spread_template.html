@@ -158,7 +158,7 @@ The summary table with all key metrics per sample
             <td>{{data.missing}}</td>
             <td>{{data.pct_called}}</td>
             <td>{{data.distance}}</td>
-            <td bgcolor="#{{data.color}}">{{data.cluster}}</td>
+            <td bgcolor="{{data.color}}">{{data.cluster}}</td>
         </tr>
     {% endfor %}
     </tbody>
@@ -374,7 +374,7 @@ A minimum spanning tree calculated by <a href="https://github.com/insapathogenom
         showLabels: true,
         showBranchLengths: true,
         showLeafLabels: true,
-        fontSize: 12,
+        fontSize: 10,
         styles: {
             {% for sample,color in sample_color.items() %}
                 {{sample}}: { fillColour: "{{color}}", label: "{{sample}}" },
