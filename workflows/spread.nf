@@ -27,8 +27,6 @@ workflow SPREAD {
 
     samplesheet         = params.input ? Channel.fromPath(params.input, checkIfExists:true ).collect() : Channel.from([])
 
-    ch_distance         = params.distance
-
     /*
     Get the corect schema to use - either from a pre-configured species or as user-provided path
     */
@@ -53,13 +51,18 @@ workflow SPREAD {
         ch_chewie_schema = params.schema ? Channel.fromPath(params.schema, checkIfExists: true).collect() : Channel.from([])
     }
     
+    if (params.distance) {
+        ch_distance = params.distance
+    }
+    
     ch_nomenclature     = params.nomenclature ? file(params.nomenclature, checkIfExists: true) : Channel.from(false)
     ch_metadata         = params.metadata ? file(params.metadata, checkIfExists: true) : Channel.from(false)
 
     ch_versions = Channel.from([])
     multiqc_files = Channel.from([])
-    
-    def partitions = params.partitions
+
+    partitions = combine_partitions(params.partitions, ch_distance)
+    println(partitions)
 
     /*
     Check that the samplesheet is valid
@@ -147,4 +150,13 @@ workflow SPREAD {
 
     emit:
     qc = MULTIQC.out.report
+}
+
+def combine_partitions(partitions,dist) {
+    def parts = partitions.tokenize(",")
+    if (!parts.contains(dist)) {
+        parts.add(dist)
+    }
+
+    return parts.join(",")
 }
