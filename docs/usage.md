@@ -129,6 +129,10 @@ A schema for a pre-configured species. Currently supported options are:
 
 May optionally be combined with `--efsa`. Mutually exclusive with `--schema`. 
 
+### `--distance` [ default = null ]
+
+A custom clustering distance. This will override any species-default and be added to the pre-set list of partitions to analyse (not replace it!). It will also be used during visualization in the final report. 
+
 ### `--schema` [ default = null ]
 
 A path to a chewbbaca 3.3.x compatible cg/wgMLST schema (i.e. the folder holding the allele fasta files). May be used instead of `--species`. Schemas can be downloaded from [chewie-ns](https://chewbbaca.readthedocs.io/en/latest/user/modules/DownloadSchema.html) or may instead be produced from compatible input data using [Chewbbaca PrepExternalSchema](https://chewbbaca.readthedocs.io/en/latest/user/modules/PrepExternalSchema.html).
