@@ -66,12 +66,31 @@ def main(json_file, template, output, version, call, wd, distance):
         sample_color = {}
         cluster_color = {}
         cluster_samples = {}
-        unique_clusters = set(samples.values())
+        unique_clusters = []
+        counter = {}
+        # check how many clusters have more than one sample
+        # this is so singletons don't get a color.
+        for sample, cluster in samples.items():
+            if cluster in counter:
+                counter[cluster] += 1
+            else:
+                counter[cluster] = 1
+
+        for cluster,count in counter.items():
+            if count > 1:
+                unique_clusters.append(cluster)
+
         color_map = generate_distinct_colors(len(unique_clusters))
+        default_color = "#9fa8ad"
 
         for sample, cluster in samples.items():
             if cluster not in cluster_color:
-                color = color_map.pop()
+                # this is a cluster with multiple samples
+                if counter[cluster] > 1:
+                    color = color_map.pop()
+                # this is a singleton, color it grey
+                else:
+                    color = default_color
                 cluster_color[cluster] = color
             sample_color[sample] = cluster_color[cluster]
             summary[sample] = { "cluster": cluster , "distance": distance, "color": sample_color[sample] }
