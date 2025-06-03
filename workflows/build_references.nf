@@ -1,7 +1,7 @@
 include { CHEWBBACA_DOWNLOADSCHEMA }            from './../modules/chewbbaca/downloadschema'
 include { CHEWBBACA_PREPEXTERNALSCHEMA }        from './../modules/chewbbaca/prepexternalschema'
 include { CHEWBBACA_ALLELECALL_INSTALL }        from './../modules/chewbbaca/allelecall_install'
-include { GUNZIP }                               from './../modules/gunzip'
+include { GUNZIP }                              from './../modules/gunzip'
 
 workflow BUILD_REFERENCES {
 
@@ -25,7 +25,6 @@ workflow BUILD_REFERENCES {
     ch_schemas = Channel.fromList(schemas)
     ch_filters = Channel.fromList(filters)
     ch_assemblies = Channel.fromList(assemblies)
-    ch_final_schemas = Channel.fromList(final_schemas)
 
     // Download the schema by id
     CHEWBBACA_DOWNLOADSCHEMA(

@@ -1,0 +1,7 @@
+name: spread_summary
+channels:
+  - conda-forge
+  - bioconda
+  - defaults
+dependencies:
+  - bioconda::multiqc=1.27.1

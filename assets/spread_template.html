@@ -1,0 +1,204 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8" />   <!--It is necessary to use the UTF-8 encoding with plotly graphics to get e.g. negative signs to render correctly -->
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<style>
+    body {background-color: lightslategray; font-family: sans-serif; font-size: 10pt; }
+    .bioraum {  display: block; font-size: 10px; color: grey ; background-color: lightgrey; padding: 5px; }
+    a {color: slategray; text-decoration: none;}
+    a:hover {color: darkgrey ; text-decoration: none;}
+    h1 strong { display: block; font-size: 75%; opacity: 0.25; }
+    h2 {background: lightslategray; color: white; padding-left: 5px ;}
+    .nav td { border-top: 1px solid; border-bottom: 1px solid ; border-left: 5px solid white;}
+    .ground {background: white ; display: block; padding: 5px; height: fit-content}
+    .impressum {background: lightgrey; display: block; padding: 5px; vertical-align: bottom; font-size: 10px;}
+    .general { border-style: none; border-spacing: 0px ;}
+    .table-caption { font-weight: bold; display: block;}
+    table { border-collapse: collapse;}
+    tr.row td { border-bottom: 1px solid grey; padding-top: 5px; padding-bottom: 5px;}
+    tr.row-sample { cursor:pointer; }
+    tr.row-sample td { border-bottom: 1px solid grey; padding-top: 5px; padding-bottom: 5px; }
+    tr.row-hidden { display: none; }
+    td { padding-left: 5px; padding-right: 5px;}
+    th { border-left: 1px solid white; padding-right: 5px;}
+    tr td[scope="sample-id"] {background-color: rgb(233, 233, 233); font-weight: bold;}
+    tr td[scope="warn"] {background-color: rgb(255, 227, 195); border-left: 4px solid rgb(240, 184, 80);}
+    tr td[scope="pass"] {background-color: rgb(204, 255, 206); border-left: 4px solid rgb(65, 156, 65);} 
+    tr td[scope="fail"] {background-color: rgb(248, 187, 187); border-left: 4px solid rgb(236, 74, 74);}
+    tr td[scope="missing"] {background-color: rgb(233, 233, 233); border-left: 4px solid lightgray;}
+    tr th[scope="col"] {background-color: #505050; color: #fff; padding-left: 5px;}
+    tr th[scope="subcol"] {background-color: #888686; color: #fff; padding-left: 5px;}
+    tr th[scope="subcol-inactive"] {background-color: #6e6e6e; color: #fff;}
+    .versions { font-size: 9px; }
+    .versions td { padding: 0px; }
+    .infotext { color:#6e6e6e; font-size: 10px ;}
+    .infotext a { text-decoration: underline;}
+    /* Tooltip container */
+    .tooltip { position: relative; display: inline-block; border-bottom: 1px dotted black; }
+    .tooltip .tooltiptext { visibility: hidden; width: 250px; background-color: rgb(189, 186, 186); color: black; text-align: center; padding: 5px 0; border-radius: 6px;  position: absolute;  z-index: 1; }
+    .tooltip:hover .tooltiptext { visibility: visible; }
+
+</style>
+</head>
+
+<body>
+
+<div class="bioraum">
+    <a href="https://github.com/bio-raum">github.com/bio-raum</a> - bioinformatic resources for surveillance in food safety and public health. 
+</div>
+
+<div class="ground">
+
+<h1>
+    <div id="summary"></div>SPREAD
+    <strong>Surveillance for Pathogen Research and Epidemiological Analysis of Disease </strong>
+</h1>
+
+<div id="navigation"></div>
+<table  class="nav">
+    <tr>
+        <td><a href="#summary">Summary</a></td>
+        <td><a href="#distances">Hamming distances</a></td>
+        <td><a href="#software">Software</a></td>
+    </tr>
+</table>
+
+<!--
+Some basic information about the analysis run
+-->
+<h2>Run Infos</h2>
+<table class="general">
+    <tr>
+        <td>User</td><td>{{user}}</td>
+    </tr>
+    <tr>
+        <td>Date</td><td>{{date}}</td>
+    </tr>
+    <tr>
+        <td>Pipeline version</td><td>{{version}}</td>
+    </tr>
+    <tr>
+        <td>Command line call</td><td>{{call}}</td>
+    </tr>
+    <tr>
+        <td>Work directory</td><td>{{wd}}</td>
+    </tr>
+</table>
+
+<!--
+The summary table with all key metrics per sample
+-->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+
+<h2>Summary</h2>
+<table class="general">
+    <tr>
+        <th scope="col">Sample</th>
+        <th scope="col">Status</th>
+        <th scope="col" colspan=3><div class="tooltip">Chewbbaca<span class="tooltiptext">Chewbbaca allele calling</span></div></th>
+        <th scope="col" colspan=2><div class="tooltip">ReporTree Cluster</span></div></th>
+    </tr>
+    <tr class="row">
+        <th scope="subcol-inactive"></th>
+        <th scope="subcol-inactive"></th>
+        <th scope="subcol-inactive">Called</th>
+        <th scope="subcol-inactive">Missing</th>
+        <th scope="subcol-inactive">% called</th>
+        <th scope="subcol-inactive">Distance</th>
+        <th scope="subcol-inactive">Cluster</th>
+    </tr>
+    {% for sample,data in summary.items() %}
+        <tr>
+            <td scope="sample-id">{{sample}}</td>
+            <td scope="{{data.status}}">{{data.status}}</td>
+            <td>{{data.called}}</td>
+            <td>{{data.missing}}</td>
+            <td>{{data.pct_called}}</td>
+            <td>{{data.distance}}</td>
+            <td bgcolor="#{{data.color}}">{{data.cluster}}</td>
+        </tr>
+    {% endfor %}
+</table>
+
+<p></p>
+<a href="#navigation">top</a>
+
+<!--
+The hamming distances
+-->
+<div id="distances"></div>
+<h2>Hamming distances</h2>
+<div class="infotext">
+   Pairwise hamming distances of the Chewbbaca allele profiles, calculated by <a href="https://github.com/insapathogenomics/ReporTree" target="_new">ReporTree</a>. 
+   <p></p>
+</div>
+
+{{distances}}
+
+<p></p>
+<a href="#navigation">top</a>
+
+<div id="tree"></div>
+<h2>Minimum spanning tree</h2>
+A minimum spanning tree calculated by <a href="https://github.com/insapathogenomics/ReporTree" target="_new">ReporTree</a>. Clusters are defined based on a pre-set distance of {{cluster_distance}}.
+
+<script src="https://unpkg.com/@phylocanvas/phylocanvas.gl@latest/dist/bundle.min.js"></script>
+
+<div id="phylocanvas" style="border: 1px solid lightgray ; display: table-cell;">
+<script>
+  const tree = new phylocanvas.PhylocanvasGL(
+  document.querySelector("#phylocanvas"),
+    {
+        size: { width: 1024, height: 600 },
+        source: `{{nwk}}`,
+        type: phylocanvas.TreeTypes.Radial,
+        interactive: true,
+        showLabels: true,
+        showBranchLengths: true,
+        showLeafLabels: true,
+        fontSize: 10,
+        styles: {
+            {% for sample,color in cluster_color.items() %}
+                {{sample}}: { fillColour: "#{{color}}", label: "{{sample}}" },
+            {% endfor %}
+        },
+    }
+  );
+</script>
+</div>
+
+
+<a href="https://achtman-lab.github.io/GrapeTree/MSTree_holder.html" target="_new">GrapeTree</a>
+
+<!-- 
+Information on used software packages
+-->
+<div id="software"></div>
+<h2>Software versions</h2>
+
+<table class="versions">
+    
+    {% for pmod,packs in packages.items() %}
+        <tr>
+            <td scope="col" colspan="2"><b>{{pmod}}</b></td>
+        </tr>
+        {% for pack,vers in packs.items() %}
+            <tr>
+                <td></td>
+                <td scope="col">{{pack}}:{{vers}}</td>
+            </tr>
+        {% endfor %}
+    {% endfor %}
+</table>
+<p></p>
+<a href="#navigation">top</a>
+
+<p></p>
+<a href="#navigation">top</a>
+
+<div class="impressum">
+    Report generated by bio-raum/gabi. Please check out our <a href="https://github.com/bio-raum/gabi/blob/main/docs/usage.md">documentation</a>. 
+</div>
+</body>
+</html>

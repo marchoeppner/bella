@@ -24,6 +24,7 @@ process REPORTREE {
     tuple val(meta), path('*clusterComposition.tsv')    , optional: true, emit: cluster_composition
     tuple val(meta), path('*.tre')                      , optional: true, emit: tre
     tuple val(meta), path('*.nwk')                      , optional: true, emit: newick
+    tuple val(meta), path("${meta.sample_id}*")         , emit: results
     path('versions.yml')                                , emit: versions
 
     script:

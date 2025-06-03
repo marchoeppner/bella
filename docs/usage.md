@@ -13,7 +13,7 @@ A basic execution of the pipeline looks as follows:
 a) Without a site-specific config file
 
 ```bash
-nextflow run marchoeppner/spread -profile singularity --input samples.tsv \\
+nextflow run marchoeppner/spread -profile singularity -r 1.0 --input samples.tsv \\
 --reference_base /path/to/references \\
 --run_name pipeline-test
 ```
@@ -35,7 +35,7 @@ Additional software provisioning tools as described [here](https://www.nextflow.
 b) with a site-specific config file
 
 ```bash
-nextflow run marchoeppner/spread -profile lsh --input samples.tsv \\
+nextflow run marchoeppner/spread -profile lsh -r 1.0 --input samples.tsv \\
 --run_name pipeline-test 
 ```
 
@@ -49,7 +49,7 @@ If you are running this pipeline in a production setting, you will want to lock 
 nextflow run marchoeppner/spread -profile lsh -r 1.0 <other options here>
 ```
 
-The `-r` option specifies a github [release tag](https://github.com/marchoeppner/gabi/releases) or branch, so could also point to `main` for the very latest code release. Please note that every major release of this pipeline (1.0, 2.0 etc) comes with a new reference data set, which has the be [installed](installation.md) separately.
+The `-r` option specifies a github [release tag](https://github.com/marchoeppner/spread/releases) or branch, so could also point to `main` for the very latest code release. Please note that every major release of this pipeline (1.0, 2.0 etc) comes with a new reference data set, which has the be [installed](installation.md) separately.
 
 ## Options
 
@@ -66,7 +66,7 @@ sampleB /path/to/sampleB.fasta
 
 Assemblies should come from an assembly workflow with proper quality control - such as [GABI](https://github.com/bio-raum/gabi) or [AQUAMIS](https://gitlab.com/bfr_bioinformatics/AQUAMIS).
 
-You have to provide all assemblies you want to analyse, every time you run the workflow.
+You have to provide all assemblies you want to analyse, every time you run the workflow. There is currently no way to do this incrementally (although the pipeline will re-use previously performed allele calls if you are resuming (-resume) an existing work directory and keep the sample names identical).
 
 ### `--nomenclature` [ default = null]
 
@@ -105,7 +105,7 @@ Some more information on how nomenclatures in ReporTree work [here](https://gith
 
 A metadata file that associates samples with relevant information about e.g. date of sampling, sampling context (e.g. clinical vs food_processing etc). The choice of metadata keys is up to you and they do not have an influence on the analysis as such, but can be used during visualization etc to reveal patterns.
 
-The file must be in TSV format:
+The file must be in TSV format, for example:
 
 ```TSV
 sample	country	region	source	date	ST	note
@@ -131,8 +131,8 @@ May optionally be combined with `--efsa`. Mutually exclusive with `--schema`.
 
 ### `--schema` [ default = null ]
 
-A path to a chewbbaca 3.3.x compatible cg/wgMLST schema. May be used instead of `--species`.
+A path to a chewbbaca 3.3.x compatible cg/wgMLST schema (i.e. the folder holding the allele fasta files). May be used instead of `--species`. Schemas can be downloaded from [chewie-ns](https://chewbbaca.readthedocs.io/en/latest/user/modules/DownloadSchema.html) or may instead be produced from compatible input data using [Chewbbaca PrepExternalSchema](https://chewbbaca.readthedocs.io/en/latest/user/modules/PrepExternalSchema.html).
 
 ### `--efsa` [ default = false]
 
-Use a modified version of a pre-configured schema following EFSA recommendations. This is only available for select species. 
+Use a modified version of a pre-configured schema following [EFSA](https://www.efsa.europa.eu/en) recommendations. This is only available for select species. 
