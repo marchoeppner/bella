@@ -61,8 +61,8 @@ workflow SPREAD {
     ch_versions = Channel.from([])
     multiqc_files = Channel.from([])
 
+    // Add  target clustering distance to the set of pre-defined partitions, if it isn't already included
     partitions = combine_partitions(params.partitions, ch_distance)
-    println(partitions)
 
     /*
     Check that the samplesheet is valid

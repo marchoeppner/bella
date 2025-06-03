@@ -140,3 +140,11 @@ A path to a chewbbaca 3.3.x compatible cg/wgMLST schema (i.e. the folder holding
 ### `--efsa` [ default = false]
 
 Use a modified version of a pre-configured schema following [EFSA](https://www.efsa.europa.eu/en) recommendations. This is only available for select species. 
+
+## Expert options
+
+These are options that you normally wouldn't need to change. 
+
+### `--partitions`  [default = 3,7,9,11,13,15,20,25,30 ]
+
+Partitions refer to the allele distance for clustering samples together. This option sets a range of distances to compute (instead of computing all possible distances between 0 and 1000). So this is mostly meant to limit the amount of data and processing needed. Any custom clustering distance you provide through `--distance` will be added here, if it isn't already included. The default is meant to cover relevant distances for real world data. 

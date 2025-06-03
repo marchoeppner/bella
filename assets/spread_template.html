@@ -38,6 +38,26 @@
     .tooltip { position: relative; display: inline-block; border-bottom: 1px dotted black; }
     .tooltip .tooltiptext { visibility: hidden; width: 250px; background-color: rgb(189, 186, 186); color: black; text-align: center; padding: 5px 0; border-radius: 6px;  position: absolute;  z-index: 1; }
     .tooltip:hover .tooltiptext { visibility: visible; }
+    .collapsible {
+        color: #ffffff;
+        cursor: pointer;
+        padding: 10px;
+        width: 100%;
+        border: none;
+        text-align: left;
+        outline: none;
+        font-size: 15px;
+    }
+
+    /* Add a background color to the button if it is clicked on (add the .active class with JS), and when you move the mouse over it (hover) */
+    .active, .collapsible:hover {
+        background-color: #ccc;
+    }
+ 
+    /* Style the collapsible content. Note: hidden by default */
+    .content { padding: 0 18px; display: none; overflow: hidden; background-color: #f1f1f1; }
+    .hit-list td { border-bottom: solid 1px rgb(9, 8, 66); padding: 1px; }
+    #cluster-list { padding: 5px; }
 
 </style>
 </head>
@@ -143,6 +163,9 @@ The hamming distances
 <h2>Minimum spanning tree</h2>
 A minimum spanning tree calculated by <a href="https://github.com/insapathogenomics/ReporTree" target="_new">ReporTree</a>. Clusters are defined based on a pre-set distance of {{cluster_distance}}.
 
+<div style="width:100%; display: table;">
+<div style="display: table-row">
+
 <script src="https://unpkg.com/@phylocanvas/phylocanvas.gl@latest/dist/bundle.min.js"></script>
 
 <div id="phylocanvas" style="border: 1px solid lightgray ; display: table-cell;">
@@ -150,16 +173,16 @@ A minimum spanning tree calculated by <a href="https://github.com/insapathogenom
   const tree = new phylocanvas.PhylocanvasGL(
   document.querySelector("#phylocanvas"),
     {
-        size: { width: 1024, height: 600 },
+        size: { width: 1600, height: 600 },
         source: `{{nwk}}`,
         type: phylocanvas.TreeTypes.Radial,
         interactive: true,
         showLabels: true,
         showBranchLengths: true,
         showLeafLabels: true,
-        fontSize: 10,
+        fontSize: 12,
         styles: {
-            {% for sample,color in cluster_color.items() %}
+            {% for sample,color in sample_color.items() %}
                 {{sample}}: { fillColour: "#{{color}}", label: "{{sample}}" },
             {% endfor %}
         },
@@ -168,6 +191,45 @@ A minimum spanning tree calculated by <a href="https://github.com/insapathogenom
 </script>
 </div>
 
+<div id="cluster-list">
+    {% for cluster,samples in cluster_samples.items() %}
+        {% if samples|length > 1 %}
+
+            <button class="collapsible" style="background-color: #{{cluster_color[cluster]}};">{{cluster}}</button>
+            <div class="content">
+                <table class="hit-list">
+                        {% for sample in samples %}
+                            <tr>
+                                <td></td>
+                                <td>{{sample}}</td>
+                            </tr>
+                        {% endfor %}
+                </table>
+            </div>
+        {% endif %}
+    {% endfor %}
+
+    <script>
+      var coll = document.getElementsByClassName("collapsible");
+      var i;
+
+      for (i = 0; i < coll.length; i++) {
+        coll[i].addEventListener("click", function() {
+    
+          this.classList.toggle("active");
+          var content = this.nextElementSibling;
+          if (content.style.display === "block") {
+            content.style.display = "none";
+          } else {
+            content.style.display = "block";
+          }
+        });
+      } 
+    </script>
+
+</div>
+</div>
+</div>
 
 <a href="https://achtman-lab.github.io/GrapeTree/MSTree_holder.html" target="_new">GrapeTree</a>
 
