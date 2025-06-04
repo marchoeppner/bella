@@ -371,17 +371,17 @@ A minimum spanning tree calculated by <a href="https://github.com/insapathogenom
     {
         size: { width: 1600, height: 600 },
         source: `{{nwk}}`,
+        styles: {
+            {% for sample,color in sample_color.items() -%}
+                "{{sample}}": { fillColour: "{{color}}" },
+            {% endfor -%}
+        },
         type: phylocanvas.TreeTypes.Radial,
         interactive: true,
         showLabels: true,
         showBranchLengths: true,
         showLeafLabels: true,
         fontSize: 10,
-        styles: {
-            {% for sample,color in sample_color.items() %}
-                {{sample}}: { fillColour: "{{color}}", label: "{{sample}}" },
-            {% endfor %}
-        },
     }
   );
 </script>

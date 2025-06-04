@@ -32,8 +32,8 @@ def generate_distinct_colors(n):
     for i in range(n): 
         # Generate a color in HSL 
         hue = i / n  # evenly spaced hues 
-        lightness = 0.5  # fixed lightness 
-        saturation = 1.0  # full saturation 
+        lightness = 0.7  # fixed lightness 
+        saturation = 0.7  # 70% saturation for a pastelle palette
         rgb = colorsys.hls_to_rgb(hue, lightness, saturation) 
         # Convert from [0, 1] to [0, 255] and round 
         rgb = tuple(int(c * 255) for c in rgb) 

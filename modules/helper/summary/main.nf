@@ -8,7 +8,6 @@ process SUMMARY {
 
     input:
     tuple val(meta), path(reportree), val(schema), path(yaml)
-    val(partitions)
 
     output:
     tuple val(meta), path('*.json') , emit: json
@@ -21,7 +20,6 @@ process SUMMARY {
 
     """
     spread_json.py --schema $schema \\
-    --partitions $partitions \\
     --yaml $yaml \\
     $args \\
     --output $result

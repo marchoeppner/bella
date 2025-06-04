@@ -10,7 +10,6 @@ parser = argparse.ArgumentParser(description="Script options")
 parser.add_argument("--output", "-o")
 parser.add_argument("--yaml", "-y")
 parser.add_argument("--schema", "-s")
-parser.add_argument("--partitions", "-p")
 
 args = parser.parse_args()
 
@@ -76,12 +75,13 @@ def parse_tabular(lines):
 
     return data
 
-def parse_partitions(lines, partitions):
+def parse_partitions(lines):
 
     data = {}
     header = lines.pop(0).strip().split("\t")
 
-    for dist in partitions.split(","):
+    # we only store the first 30 partitions
+    for dist in list(range(30)):
         partition = header.index(f"MST-{dist}x1.0")
 
         this_data = {}
@@ -113,7 +113,7 @@ def parse_yaml(lines):
     return data
 
 
-def main(yaml_file, schema, partitions, output):
+def main(yaml_file, schema, output):
 
     files = [os.path.abspath(f) for f in glob.glob("*")]
     date = datetime.today().strftime('%Y-%m-%d')
@@ -139,7 +139,7 @@ def main(yaml_file, schema, partitions, output):
         elif re.search(".nwk", file):
             matrix["tree"] = "\n".join(lines)
         elif re.search(".partitions.tsv", file):
-            matrix["clusters"] = parse_partitions(lines, partitions)
+            matrix["clusters"] = parse_partitions(lines)
         elif re.search(".loci_report.tsv", file):
             matrix["loci_report"] = parse_tabular(lines)
 
@@ -148,4 +148,4 @@ def main(yaml_file, schema, partitions, output):
 
 
 if __name__ == '__main__':
-    main(args.yaml, args.schema, args.partitions, args.output)
+    main(args.yaml, args.schema, args.output)

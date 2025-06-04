@@ -57,6 +57,46 @@
     }
   ],
   "properties": {
+    "species": {
+      "type": "string",
+      "description": "Short-hand for a pre-installed schema (campylobacter, escherichia, listeria, salmonella)"
+    },
+    "efsa": {
+      "type": "boolean",
+      "fa_icon": "fas fa-filter",
+      "description": "Flag to use EFSA schema, if available"
+    },
+    "schema": {
+      "type": "string",
+      "fa_icon": "fas fa-folder-open",
+      "description": "A (local) chewbbaca schema folder"
+    },
+    "metadata": {
+      "type": "string",
+      "fa_icon": "fas fa-file-import",
+      "description": "ReporTree metadata file in TSV format."
+    },
+    "nomenclature": {
+      "type": "string",
+      "fa_icon": "fas fa-file-import",
+      "description": "ReporTree nomenclature file in TSV format"
+    },
+    "partitions": {
+      "type": "string",
+      "default": "stability_regions",
+      "fa_icon": "fas fa-file-import",
+      "description": "List of partitions to analyze"
+    },
+    "distance": {
+      "type": "integer",
+      "default": 7,
+      "description": "A custom clustering distance to use for visualization in the report."
+    },
+    "run_name": {
+      "type": "string",
+      "fa_icon": "fas fa-filter",
+      "description": "A descriptive name for this run"
+    },
     "reference_base": {
       "type": "string",
       "fa_icon": "fas fa-folder-open",
@@ -72,45 +112,9 @@
       "type": "boolean",
       "description": "Flag to start reference installation"
     },
-    "schema": {
-      "type": "string",
-      "fa_icon": "fas fa-folder-open",
-      "description": "A chewbbaca schema folder"
-    },
-    "species_id": {
-      "type": "string",
-      "hidden": true,
-      "fa_icon": "fas fa-filter"
-    },
-    "efsa": {
-      "type": "boolean",
-      "fa_icon": "fas fa-filter",
-      "description": "Flag to use EFSA schema, if available"
-    },
-    "metadata": {
-      "type": "string",
-      "fa_icon": "fas fa-file-import",
-      "description": "ReporTree metadata file in TSV format."
-    },
-    "nomenclature": {
-      "type": "string",
-      "fa_icon": "fas fa-file-import",
-      "description": "ReporTree nomenclature file in TSV format"
-    },
-    "partitions": {
-      "type": "string",
-      "default": "3,7,9,15,20,25",
-      "fa_icon": "fas fa-file-import",
-      "description": "List of partitions to analyze"
-    },
     "logo": {
       "type": "string",
-      "default": "/home/mhoeppner/git/spread/assets/pipelinelogo.png"
-    },
-    "run_name": {
-      "type": "string",
-      "fa_icon": "fas fa-filter",
-      "description": "A descriptive name for this run"
+      "default": "/home/marc/git/spread/assets/pipelinelogo.png"
     },
     "plaintext_email": {
       "type": "boolean",
@@ -130,12 +134,12 @@
     },
     "multiqc_config": {
       "type": "string",
-      "default": "/home/mhoeppner/git/spread/conf/multiqc_config.yaml",
+      "default": "/home/marc/git/spread/conf/multiqc_config.yaml",
       "hidden": true
     },
     "multiqc_logo": {
       "type": "string",
-      "default": "/home/mhoeppner/git/spread/assets/pipelinelogo.png",
+      "default": "/home/marc/git/spread/assets/pipelinelogo.png",
       "hidden": true
     },
     "publish_dir_mode": {
@@ -152,7 +156,15 @@
       "default": 0.95,
       "fa_icon": "fas fa-filter",
       "description": "Fraction of usable loci required for a sample to be included"
+    },
+    "template": {
+      "type": "string",
+      "default": "/home/marc/git/spread/assets/spread_template.html"
+    },
+    "parallel_calling": {
+      "type": "boolean",
+      "description": "Perform parallelized allele calling. Faster for large datasets."
     }
   },
-  "required": ["reference_base", "reference_version", "run_name"]
+  "required": ["partitions", "distance", "run_name", "reference_base", "reference_version"]
 }

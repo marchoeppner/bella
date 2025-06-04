@@ -29,9 +29,6 @@ class WorkflowPipeline {
             log.info "Must provide a clustering distance to use as default (int)."
             System.exit(1)
         }
-        if (params.species && params.distance) {
-            log.info "Provided a custom clustering distance - overriding species default."
-        }
        
     }
 
