@@ -25,7 +25,7 @@ workflow CHEWBBACA_PARALLEL {
                 [ sample_id: params.run_name ],
                 r
             ]
-        }.collect()
+        }.groupTuple()
     )
     ch_versions = ch_versions.mix(CHEWBBACA_JOINPROFILES.out.versions)
     

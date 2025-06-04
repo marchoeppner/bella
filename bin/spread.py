@@ -61,6 +61,7 @@ def main(json_file, template, output, version, call, wd, distance):
     data["nwk"] = jdata["tree"]
     summary = {}
 
+    # ReporTree Cluster information
     if distance in jdata["clusters"]:
         samples = jdata["clusters"][distance]
         sample_color = {}
@@ -103,6 +104,7 @@ def main(json_file, template, output, version, call, wd, distance):
         data["cluster_color"] = cluster_color
         data["cluster_samples"] = cluster_samples
 
+    # reporTree Locus report
     for locus in jdata["loci_report"]:
         sample = locus["samples"]
         summary[sample]["called"] = locus["called"]
@@ -120,17 +122,16 @@ def main(json_file, template, output, version, call, wd, distance):
 
         summary[sample]["status"] = sample_status
 
+    # Chewbbaca allele calling stats
     for cstats in jdata["chewbbaca_stats"]:
         sample = cstats["FILE"]
         summary[sample]["classified_cds"] = cstats["Classified_CDSs"]
-        summary[sample]["Invalid CDSs"] = cstats["Invalid CDSs"]
+        summary[sample]["invalid_cds"] = cstats["Invalid CDSs"]
         summary[sample]["total_cds"] = cstats["Total_CDSs"]
 
     data["summary"] = summary
     
     matrix = jdata["distance"]
-
-    
 
     #############
     # Plots

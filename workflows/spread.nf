@@ -130,7 +130,7 @@ workflow SPREAD {
             [ sample_id: params.run_name],
             s
         ]
-      }  
+      }.groupTuple()
     ).set { ch_summary_input }
 
     // Summarize results as JSON
