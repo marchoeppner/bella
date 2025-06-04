@@ -32,5 +32,6 @@ workflow CHEWBBACA_PARALLEL {
     emit:
     versions = ch_versions
     matrix = CHEWBBACA_JOINPROFILES.out.report
+    stats = CHEWBBACA_ALLELECALL.out.stats
 
 }

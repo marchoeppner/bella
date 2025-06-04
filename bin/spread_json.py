@@ -115,7 +115,12 @@ def parse_yaml(lines):
 
 def main(yaml_file, schema, output):
 
-    files = [os.path.abspath(f) for f in glob.glob("*")]
+    files = [os.path.abspath(f) for f in glob.glob("*.*")]
+    files_in_folders = [os.path.abspath(f) for f in glob.glob("*/*")]
+    for f in files_in_folders:
+        files.append(f)
+    print(files)
+
     date = datetime.today().strftime('%Y-%m-%d')
 
     with open(yaml_file, "r") as f:
@@ -126,7 +131,8 @@ def main(yaml_file, schema, output):
     matrix = {
         "date": date,
         "schema": schema, 
-        "software": versions
+        "software": versions,
+        "chewbbaca_stats": []
     }
 
     for file in files:
@@ -142,7 +148,10 @@ def main(yaml_file, schema, output):
             matrix["clusters"] = parse_partitions(lines)
         elif re.search(".loci_report.tsv", file):
             matrix["loci_report"] = parse_tabular(lines)
-
+        elif re.search("results_statistics.tsv", file):
+            info = parse_tabular(lines)
+            for i in info:
+                matrix["chewbbaca_stats"].append(i)
     with open(output, "w") as fo:
         json.dump(matrix, fo, indent=4, sort_keys=True)
 

@@ -77,6 +77,7 @@ workflow SPREAD {
             ch_chewie_schema.collect()
         )
         ch_matrix = CHEWBBACA_PARALLEL.out.matrix
+        ch_chewie_stats = CHEWBBACA_PARALLEL.out.stats
         ch_versions = ch_versions.mix(CHEWBBACA_PARALLEL.out.versions)
     } else {
         /*
@@ -88,6 +89,7 @@ workflow SPREAD {
             ch_chewie_schema.collect()
         )
         ch_matrix = CHEWBBACA_SERIAL.out.matrix
+        ch_chewie_stats = CHEWBBACA_SERIAL.out.stats
         ch_versions = ch_versions.mix(CHEWBBACA_SERIAL.out.versions)
     }
     
@@ -122,6 +124,13 @@ workflow SPREAD {
                 y
             ]
         }
+    ).join(
+      ch_chewie_stats.map { m,s ->
+        [
+            [ sample_id: params.run_name],
+            s
+        ]
+      }  
     ).set { ch_summary_input }
 
     // Summarize results as JSON

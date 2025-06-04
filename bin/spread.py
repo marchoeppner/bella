@@ -120,6 +120,12 @@ def main(json_file, template, output, version, call, wd, distance):
 
         summary[sample]["status"] = sample_status
 
+    for cstats in jdata["chewbbaca_stats"]:
+        sample = cstats["FILE"]
+        summary[sample]["classified_cds"] = cstats["Classified_CDSs"]
+        summary[sample]["Invalid CDSs"] = cstats["Invalid CDSs"]
+        summary[sample]["total_cds"] = cstats["Total_CDSs"]
+
     data["summary"] = summary
     
     matrix = jdata["distance"]

@@ -7,7 +7,7 @@ process SUMMARY {
         'quay.io/biocontainers/multiqc:1.27.1--pyhdfd78af_0' }"
 
     input:
-    tuple val(meta), path(reportree), val(schema), path(yaml)
+    tuple val(meta), path(reportree), val(schema), path(yaml), path(stats, stageAs: '?/')
 
     output:
     tuple val(meta), path('*.json') , emit: json
