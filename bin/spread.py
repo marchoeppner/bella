@@ -32,8 +32,8 @@ def generate_distinct_colors(n):
     for i in range(n): 
         # Generate a color in HSL 
         hue = i / n  # evenly spaced hues 
-        lightness = 0.5  # fixed lightness 
-        saturation = 1.0  # full saturation 
+        lightness = 0.7  # fixed lightness 
+        saturation = 0.7  # 70% saturation for a pastelle palette
         rgb = colorsys.hls_to_rgb(hue, lightness, saturation) 
         # Convert from [0, 1] to [0, 255] and round 
         rgb = tuple(int(c * 255) for c in rgb) 
@@ -61,17 +61,37 @@ def main(json_file, template, output, version, call, wd, distance):
     data["nwk"] = jdata["tree"]
     summary = {}
 
+    # ReporTree Cluster information
     if distance in jdata["clusters"]:
         samples = jdata["clusters"][distance]
         sample_color = {}
         cluster_color = {}
         cluster_samples = {}
-        unique_clusters = set(samples.values())
+        unique_clusters = []
+        counter = {}
+        # check how many clusters have more than one sample
+        # this is so singletons don't get a color.
+        for sample, cluster in samples.items():
+            if cluster in counter:
+                counter[cluster] += 1
+            else:
+                counter[cluster] = 1
+
+        for cluster,count in counter.items():
+            if count > 1:
+                unique_clusters.append(cluster)
+
         color_map = generate_distinct_colors(len(unique_clusters))
+        default_color = "#9fa8ad"
 
         for sample, cluster in samples.items():
             if cluster not in cluster_color:
-                color = color_map.pop()
+                # this is a cluster with multiple samples
+                if counter[cluster] > 1:
+                    color = color_map.pop()
+                # this is a singleton, color it grey
+                else:
+                    color = default_color
                 cluster_color[cluster] = color
             sample_color[sample] = cluster_color[cluster]
             summary[sample] = { "cluster": cluster , "distance": distance, "color": sample_color[sample] }
@@ -84,6 +104,7 @@ def main(json_file, template, output, version, call, wd, distance):
         data["cluster_color"] = cluster_color
         data["cluster_samples"] = cluster_samples
 
+    # reporTree Locus report
     for locus in jdata["loci_report"]:
         sample = locus["samples"]
         summary[sample]["called"] = locus["called"]
@@ -101,11 +122,16 @@ def main(json_file, template, output, version, call, wd, distance):
 
         summary[sample]["status"] = sample_status
 
+    # Chewbbaca allele calling stats
+    for cstats in jdata["chewbbaca_stats"]:
+        sample = cstats["FILE"]
+        summary[sample]["classified_cds"] = cstats["Classified_CDSs"]
+        summary[sample]["invalid_cds"] = cstats["Invalid CDSs"]
+        summary[sample]["total_cds"] = cstats["Total_CDSs"]
+
     data["summary"] = summary
     
     matrix = jdata["distance"]
-
-    
 
     #############
     # Plots

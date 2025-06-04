@@ -39,7 +39,7 @@ process REPORTREE {
     $args \\
     -a $alleles \\
     $n $m \\
-    -out $prefix 2> /dev/null
+    -out $prefix #2> /dev/null
 
     cat <<-END_VERSIONS > versions.yml
     "${task.process}":

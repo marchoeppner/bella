@@ -7,8 +7,7 @@ process SUMMARY {
         'quay.io/biocontainers/multiqc:1.27.1--pyhdfd78af_0' }"
 
     input:
-    tuple val(meta), path(reportree), val(schema), path(yaml)
-    val(partitions)
+    tuple val(meta), path(reportree), val(schema), path(yaml), path(stats, stageAs: '?/')
 
     output:
     tuple val(meta), path('*.json') , emit: json
@@ -21,7 +20,6 @@ process SUMMARY {
 
     """
     spread_json.py --schema $schema \\
-    --partitions $partitions \\
     --yaml $yaml \\
     $args \\
     --output $result

@@ -16,6 +16,7 @@ process CHEWBBACA_ALLELECALL {
     output:
     tuple val(meta), path(results)                          , emit: report
     tuple val(meta), path("${results}/results_alleles.tsv") , emit: profile
+    tuple val(meta), path("${results}/results_statistics.tsv"), emit: stats
     path('versions.yml')                                    , emit: versions
 
     script:

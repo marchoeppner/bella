@@ -61,9 +61,6 @@ workflow SPREAD {
     ch_versions = Channel.from([])
     multiqc_files = Channel.from([])
 
-    // Add  target clustering distance to the set of pre-defined partitions, if it isn't already included
-    partitions = combine_partitions(params.partitions, ch_distance)
-
     /*
     Check that the samplesheet is valid
     */
@@ -80,6 +77,7 @@ workflow SPREAD {
             ch_chewie_schema.collect()
         )
         ch_matrix = CHEWBBACA_PARALLEL.out.matrix
+        ch_chewie_stats = CHEWBBACA_PARALLEL.out.stats
         ch_versions = ch_versions.mix(CHEWBBACA_PARALLEL.out.versions)
     } else {
         /*
@@ -91,6 +89,7 @@ workflow SPREAD {
             ch_chewie_schema.collect()
         )
         ch_matrix = CHEWBBACA_SERIAL.out.matrix
+        ch_chewie_stats = CHEWBBACA_SERIAL.out.stats
         ch_versions = ch_versions.mix(CHEWBBACA_SERIAL.out.versions)
     }
     
@@ -125,12 +124,18 @@ workflow SPREAD {
                 y
             ]
         }
+    ).join(
+      ch_chewie_stats.map { m,s ->
+        [
+            [ sample_id: params.run_name],
+            s
+        ]
+      }.groupTuple()
     ).set { ch_summary_input }
 
     // Summarize results as JSON
     SUMMARY(
-        ch_summary_input,
-        partitions
+        ch_summary_input
     )
     ch_versions = ch_versions.mix(SUMMARY.out.versions)
 

@@ -25,12 +25,13 @@ workflow CHEWBBACA_PARALLEL {
                 [ sample_id: params.run_name ],
                 r
             ]
-        }.collect()
+        }.groupTuple()
     )
     ch_versions = ch_versions.mix(CHEWBBACA_JOINPROFILES.out.versions)
     
     emit:
     versions = ch_versions
     matrix = CHEWBBACA_JOINPROFILES.out.report
+    stats = CHEWBBACA_ALLELECALL.out.stats
 
 }

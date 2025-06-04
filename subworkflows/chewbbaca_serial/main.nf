@@ -35,5 +35,6 @@ workflow CHEWBBACA_SERIAL {
     emit:
     versions = ch_versions
     matrix = CHEWBBACA_ALLELECALL.out.profile
+    stats = CHEWBBACA_ALLELECALL.out.stats
 
 }
