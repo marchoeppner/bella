@@ -1,5 +1,6 @@
 include { CHEWBBACA_ALLELECALL }            from './../../modules/chewbbaca/allelecall'
 include { CHEWBBACA_ALLELECALLEVALUATOR }   from './../../modules/chewbbaca/allelecallevaluator'
+include { CHEWBBACA_EXTRACTCGMLST }         from './../../modules/chewbbaca/extractcgmlst'
 
 workflow CHEWBBACA_SERIAL {
     
@@ -32,9 +33,15 @@ workflow CHEWBBACA_SERIAL {
     )
     ch_versions = ch_versions.mix(CHEWBBACA_ALLELECALLEVALUATOR.out.versions)
 
+    // Filter matrix for valid positions
+    CHEWBBACA_EXTRACTCGMLST(
+        CHEWBBACA_ALLELECALL.out.profile
+    )
+    ch_versions = ch_versions.mix(CHEWBBACA_EXTRACTCGMLST.out.versions)
+
     emit:
     versions = ch_versions
-    matrix = CHEWBBACA_ALLELECALL.out.profile
+    matrix = CHEWBBACA_EXTRACTCGMLST.out.report
     stats = CHEWBBACA_ALLELECALL.out.stats
 
 }
