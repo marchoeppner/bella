@@ -38,20 +38,9 @@
     .tooltip { position: relative; display: inline-block; border-bottom: 1px dotted black; }
     .tooltip .tooltiptext { visibility: hidden; width: 250px; background-color: rgb(189, 186, 186); color: black; text-align: center; padding: 5px 0; border-radius: 6px;  position: absolute;  z-index: 1; }
     .tooltip:hover .tooltiptext { visibility: visible; }
-    .collapsible {
-        color: #ffffff;
-        cursor: pointer;
-        padding: 10px;
-        width: 100%;
-        border: none;
-        text-align: left;
-        outline: none;
-        font-size: 15px;
-    }
+    .collapsible { color: #ffffff; cursor: pointer; padding: 10px; width: 100%; border: none; text-align: left; outline: none; font-size: 15px; }
     /* Add a background color to the button if it is clicked on (add the .active class with JS), and when you move the mouse over it (hover) */
-    .active, .collapsible:hover {
-        background-color: #ccc;
-    }
+    .active, .collapsible:hover { background-color: #ccc; }
     .content { padding: 0 18px; display: none;  }
     .hit-list td { border-bottom: solid 1px rgb(9, 8, 66); padding: 1px; }
     #cluster-list { padding: 5px; }
@@ -136,8 +125,8 @@ The summary table with all key metrics per sample
         <tr>
             <th scope="col">Sample</th>
             <th scope="col">Status</th>
-            <th scope="col" colspan=5><div class="tooltip">Chewbbaca<span class="tooltiptext">Chewbbaca allele calling</span></div></th>
-            <th scope="col" colspan=2><div class="tooltip">ReporTree Cluster</span></div></th>
+            <th scope="col" colspan=3><div class="tooltip">Chewbbaca<span class="tooltiptext">Chewbbaca allele calling</span></div></th>
+            <th scope="col" colspan=5><div class="tooltip">ReporTree</span></div></th>
         </tr>
         <tr class="row">
             <th scope="subcol-inactive"></th>
@@ -145,6 +134,7 @@ The summary table with all key metrics per sample
             <th scope="subcol-inactive"></th>
             <th scope="subcol-inactive">Total_CDSs</th>
             <th scope="subcol-inactive">Classified CDSs</th>
+            <th scope="subcol-inactive">% classified</th>
             <th scope="subcol-inactive">Called</th>
             <th scope="subcol-inactive">Missing</th>
             <th scope="subcol-inactive">% called</th>
@@ -159,6 +149,7 @@ The summary table with all key metrics per sample
             <td scope="{{data.status}}">{{data.status}}</td>
             <td>{{data.total_cds}}</td> 
             <td>{{data.classified_cds}}</td>
+            <td>{{data.perc_classified}}</td>
             <td>{{data.called}}</td>
             <td>{{data.missing}}</td>
             <td>{{data.pct_called}}</td>

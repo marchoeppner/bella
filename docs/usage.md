@@ -66,7 +66,7 @@ sampleB /path/to/sampleB.fasta
 
 Assemblies should come from an assembly workflow with proper quality control - such as [GABI](https://github.com/bio-raum/gabi) or [AQUAMIS](https://gitlab.com/bfr_bioinformatics/AQUAMIS).
 
-You have to provide all assemblies you want to analyse, every time you run the workflow. There is currently no way to do this incrementally (although the pipeline will re-use previously performed allele calls if you are resuming (-resume) an existing work directory and keep the sample names identical).
+You have to provide all assemblies you want to analyse, every time you run the workflow. There is currently no way to do this incrementally; although the pipeline will re-use previously computed allele profiles if you run with the `--parallel_calling` (see below).
 
 ### `--nomenclature` [ default = null]
 
@@ -118,6 +118,10 @@ sample_0006	C	B2	clinical	23/09/2021	217	not_real_data_test_only
 sample_0007	A	A3	clinical	18/09/2021	388	not_real_data_test_only
 sample_0008	B	B3	clinical	12/09/2021	217	not_real_data_test_only
 ```
+### `--parallel_calling` [ default = false ]
+
+SPREAD will run Chewbbaca in bulk mode by default (i.e. all assemblies are analysed in the same process). This saves startup time and is recommended for smaller data sets (< 100 samples). If you are analyzing very large data sets, it can instead be preferrable to compute allele profiles per assembly in parallel to make full use of larger compute infrastructures. For that, use this option. This has the added advantage of allowing you to add additional assemblies later without the need to recompute all the allele profiles. 
+
 ### `--species` [ default = null]
 
 A schema for a pre-configured species. Currently supported options are:
@@ -131,7 +135,7 @@ May optionally be combined with `--efsa`. Mutually exclusive with `--schema`.
 
 ### `--distance` [ default = null ]
 
-A custom clustering distance. This will override any species-default and be added to the pre-set list of partitions to analyse (not replace it!). It will also be used during visualization in the final report. 
+A custom clustering distance to use in the graphical report (the full results are available in TSV format for downstream processing).
 
 ### `--schema` [ default = null ]
 
@@ -145,6 +149,6 @@ Use a modified version of a pre-configured schema following [EFSA](https://www.e
 
 These are options that you normally wouldn't need to change. 
 
-### `--partitions`  [default = 3,7,9,11,13,15,20,25,30 ]
+### `--partitions`  [default = stablity_regions ]
 
-Partitions refer to the allele distance for clustering samples together. This option sets a range of distances to compute (instead of computing all possible distances between 0 and 1000). So this is mostly meant to limit the amount of data and processing needed. Any custom clustering distance you provide through `--distance` will be added here, if it isn't already included. The default is meant to cover relevant distances for real world data. 
+Partitions refer to the allele distance for clustering samples together. By default, this option is set to `stablity_regions` to analyse the range of values under which clusters remain stable.

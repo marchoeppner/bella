@@ -109,7 +109,7 @@ def main(json_file, template, output, version, call, wd, distance):
         sample = locus["samples"]
         summary[sample]["called"] = locus["called"]
         summary[sample]["missing"] = locus["missing"]
-        summary[sample]["pct_called"] = locus["pct_called"]
+        summary[sample]["pct_called"] = int(locus["pct_called"])*100
 
         pct_called = float(locus["pct_called"])
         sample_status = status["missing"]
@@ -128,6 +128,7 @@ def main(json_file, template, output, version, call, wd, distance):
         summary[sample]["classified_cds"] = cstats["Classified_CDSs"]
         summary[sample]["invalid_cds"] = cstats["Invalid CDSs"]
         summary[sample]["total_cds"] = cstats["Total_CDSs"]
+        summary[sample]["perc_classified"] = round(float(cstats["Classified_CDSs"])/(float(cstats["Total_CDSs"]))*100,2)
 
     data["summary"] = summary
     
