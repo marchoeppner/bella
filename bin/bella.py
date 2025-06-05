@@ -77,7 +77,7 @@ def main(json_file, template, output, version, call, wd, distance):
             else:
                 counter[cluster] = 1
 
-        for cluster,count in counter.items():
+        for cluster, count in counter.items():
             if count > 1:
                 unique_clusters.append(cluster)
 
@@ -94,11 +94,11 @@ def main(json_file, template, output, version, call, wd, distance):
                     color = default_color
                 cluster_color[cluster] = color
             sample_color[sample] = cluster_color[cluster]
-            summary[sample] = { "cluster": cluster , "distance": distance, "color": sample_color[sample] }
+            summary[sample] = {"cluster": cluster, "distance": distance, "color": sample_color[sample]}
             if cluster in cluster_samples:
                 cluster_samples[cluster].append(sample)
             else:
-                cluster_samples[cluster] = [ sample ]
+                cluster_samples[cluster] = [sample]
 
         data["sample_color"] = sample_color
         data["cluster_color"] = cluster_color
@@ -109,11 +109,12 @@ def main(json_file, template, output, version, call, wd, distance):
         sample = locus["samples"]
         summary[sample]["called"] = locus["called"]
         summary[sample]["missing"] = locus["missing"]
-        summary[sample]["pct_called"] = int(locus["pct_called"])*100
+        pct_called = round(float(locus["pct_called"]) * 100, 2)
 
-        pct_called = float(locus["pct_called"])
+        summary[sample]["pct_called"] = pct_called
+
         sample_status = status["missing"]
-        if (pct_called < 0.85 ):
+        if (pct_called < 0.85):
             sample_status = status["fail"]
         elif (pct_called < 0.95):
             sample_status = status["warn"]
@@ -128,7 +129,7 @@ def main(json_file, template, output, version, call, wd, distance):
         summary[sample]["classified_cds"] = cstats["Classified_CDSs"]
         summary[sample]["invalid_cds"] = cstats["Invalid CDSs"]
         summary[sample]["total_cds"] = cstats["Total_CDSs"]
-        summary[sample]["perc_classified"] = round(float(cstats["Classified_CDSs"])/(float(cstats["Total_CDSs"]))*100,2)
+        summary[sample]["perc_classified"] = round(float(cstats["Classified_CDSs"]) / (float(cstats["Total_CDSs"])) * 100, 2)
 
     data["summary"] = summary
     
@@ -140,8 +141,8 @@ def main(json_file, template, output, version, call, wd, distance):
 
     # hamming distance heat map
     hdata = matrix["data"]
-    fig = px.imshow(hdata, 
-                    labels = dict( color="Allele distance"),
+    fig = px.imshow(hdata,
+                    labels=dict(color="Allele distance"),
                     x=matrix["x"],
                     y=matrix["y"]
                     )
