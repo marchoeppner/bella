@@ -51,6 +51,18 @@ nextflow run marchoeppner/bella -profile lsh -r 1.0 <other options here>
 
 The `-r` option specifies a github [release tag](https://github.com/marchoeppner/bella/releases) or branch, so could also point to `main` for the very latest code release. Please note that every major release of this pipeline (1.0, 2.0 etc) comes with a new reference data set, which has the be [installed](installation.md) separately.
 
+## Testing
+
+The pipeline has a built-in test, which you can use to verify your installation. 
+
+```bash
+nextflow run marchoeppner/bella -profile singularity,test --reference_base /path/to/references 
+```
+
+where `singularity` may be replaced with whatever is appropriate for your system (including a site-specific config, which then makes the `--reference_base` argument obsolete).
+
+This test will download 10 Listeria monocytogenes assemblies from a recent ring trial, which includes 3 clusters of 2 samples at a clustering distance of 10.
+
 ## Options
 
 ### `--input` [default = null]
@@ -135,7 +147,7 @@ May optionally be combined with `--efsa`. Mutually exclusive with `--schema`.
 
 ### `--distance` [ default = null ]
 
-A custom clustering distance to use in the graphical report (the full results are available in TSV format for downstream processing).
+A custom clustering distance to use in the graphical report (the full results are available in TSV format for downstream processing). Pre-configured schema (--species) use a pre-set distance (which you can override with this option).
 
 ### `--schema` [ default = null ]
 
