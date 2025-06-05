@@ -1,8 +1,8 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "https://raw.githubusercontent.com/marchoeppner/spread//nextflow_schema.json",
-  "title": "marchoeppner/spread pipeline parameters",
-  "description": "SPREAD Pipeline for outbreak analysis",
+  "$id": "https://raw.githubusercontent.com/marchoeppner/bella//nextflow_schema.json",
+  "title": "marchoeppner/bella pipeline parameters",
+  "description": "BELLA Pipeline for outbreak analysis",
   "type": "object",
   "$defs": {
     "input_output_options": {
@@ -114,7 +114,7 @@
     },
     "logo": {
       "type": "string",
-      "default": "/home/marc/git/spread/assets/pipelinelogo.png"
+      "default": "/home/marc/git/bella/assets/pipelinelogo.png"
     },
     "plaintext_email": {
       "type": "boolean",
@@ -134,12 +134,12 @@
     },
     "multiqc_config": {
       "type": "string",
-      "default": "/home/marc/git/spread/conf/multiqc_config.yaml",
+      "default": "/home/marc/git/bella/conf/multiqc_config.yaml",
       "hidden": true
     },
     "multiqc_logo": {
       "type": "string",
-      "default": "/home/marc/git/spread/assets/pipelinelogo.png",
+      "default": "/home/marc/git/bella/assets/pipelinelogo.png",
       "hidden": true
     },
     "publish_dir_mode": {
@@ -159,7 +159,7 @@
     },
     "template": {
       "type": "string",
-      "default": "/home/marc/git/spread/assets/spread_template.html"
+      "default": "/home/marc/git/bella/assets/bella_template.html"
     },
     "parallel_calling": {
       "type": "boolean",

@@ -13,7 +13,7 @@ A basic execution of the pipeline looks as follows:
 a) Without a site-specific config file
 
 ```bash
-nextflow run marchoeppner/spread -profile singularity -r 1.0 --input samples.tsv \\
+nextflow run marchoeppner/bella -profile singularity -r 1.0 --input samples.tsv \\
 --reference_base /path/to/references \\
 --run_name pipeline-test
 ```
@@ -35,7 +35,7 @@ Additional software provisioning tools as described [here](https://www.nextflow.
 b) with a site-specific config file
 
 ```bash
-nextflow run marchoeppner/spread -profile lsh -r 1.0 --input samples.tsv \\
+nextflow run marchoeppner/bella -profile lsh -r 1.0 --input samples.tsv \\
 --run_name pipeline-test 
 ```
 
@@ -46,10 +46,10 @@ In this example, both `--reference_base` and the choice of software provisioning
 If you are running this pipeline in a production setting, you will want to lock the pipeline to a specific version. This is natively supported through nextflow with the `-r` argument:
 
 ```bash
-nextflow run marchoeppner/spread -profile lsh -r 1.0 <other options here>
+nextflow run marchoeppner/bella -profile lsh -r 1.0 <other options here>
 ```
 
-The `-r` option specifies a github [release tag](https://github.com/marchoeppner/spread/releases) or branch, so could also point to `main` for the very latest code release. Please note that every major release of this pipeline (1.0, 2.0 etc) comes with a new reference data set, which has the be [installed](installation.md) separately.
+The `-r` option specifies a github [release tag](https://github.com/marchoeppner/bella/releases) or branch, so could also point to `main` for the very latest code release. Please note that every major release of this pipeline (1.0, 2.0 etc) comes with a new reference data set, which has the be [installed](installation.md) separately.
 
 ## Options
 

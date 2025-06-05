@@ -1,4 +1,4 @@
-name: spread_report
+name: bella_report
 channels:
   - conda-forge
   - bioconda

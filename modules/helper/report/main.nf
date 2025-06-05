@@ -26,7 +26,7 @@ process REPORT {
     def wd = workflow.workDir
 
     """
-    spread.py --template $template \
+    bella.py --template $template \
     --input $json \
     --version $version \
     --call '$call' \

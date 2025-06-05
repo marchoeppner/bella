@@ -30,7 +30,7 @@ Please note that this pipeline currently **does not work** with a package manage
 This pipeline requires locally stored schemas. To build these, do:
 
 ```
-nextflow run marchoeppner/spread -profile singularity \\
+nextflow run marchoeppner/bella -profile singularity \\
 --build_references \\
 --run_name build_refs \\
 --reference_base /path/to/references

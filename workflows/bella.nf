@@ -16,14 +16,14 @@ include { CHEWBBACA_PARALLEL }              from './../subworkflows/chewbbaca_pa
 include { CHEWBBACA_SERIAL }                from './../subworkflows/chewbbaca_serial'
 
 
-workflow SPREAD {
+workflow BELLA {
 
     main:
 
     // Subworkflows
     ch_multiqc_config   = params.multiqc_config   ? Channel.fromPath(params.multiqc_config, checkIfExists: true).collect() : Channel.value([])
     ch_multiqc_logo     = params.multiqc_logo     ? Channel.fromPath(params.multiqc_logo, checkIfExists: true).collect() : Channel.value([])
-    ch_spread_template  = params.template         ? Channel.fromPath(params.template, checkIfExists: true).collect() : Channel.value([])
+    ch_bella_template  = params.template         ? Channel.fromPath(params.template, checkIfExists: true).collect() : Channel.value([])
 
     samplesheet         = params.input ? Channel.fromPath(params.input, checkIfExists:true ).collect() : Channel.from([])
 
@@ -142,7 +142,7 @@ workflow SPREAD {
     // Generate HTML report
     REPORT(
         SUMMARY.out.json,
-        ch_spread_template,
+        ch_bella_template,
         ch_distance
     )
     ch_versions = ch_versions.mix(REPORT.out.versions)

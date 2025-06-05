@@ -19,7 +19,7 @@ process SUMMARY {
     result = prefix + '.json'
 
     """
-    spread_json.py --schema $schema \\
+    bella_json.py --schema $schema \\
     --yaml $yaml \\
     $args \\
     --output $result

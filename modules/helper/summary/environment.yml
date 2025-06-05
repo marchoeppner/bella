@@ -1,4 +1,4 @@
-name: spread_summary
+name: bella_summary
 channels:
   - conda-forge
   - bioconda

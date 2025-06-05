@@ -4,23 +4,23 @@ nextflow.enable.dsl = 2
 
 /**
 ===============================
-bio-raum/spread
+bio-raum/bella
 ===============================
 
-Surveillance for Pathogen Research and Epidemiological Analysis of Disease 
+Bacterial Epidemiological Linkage and Analysis 
 
 This Pipeline performs cgMLST clustering given assembled bacterial genomes and an existing
 Chewbbaca-compatible clustering schema.
 
 ### Homepage / git
-git@github.com:marchoeppner/pipelspreadine.git
+git@github.com:marchoeppner/bella.git
 
 **/
 
 // Pipeline version
 params.version = workflow.manifest.version
 
-include { SPREAD }              from './workflows/spread'
+include { BELLA }               from './workflows/bella'
 include { BUILD_REFERENCES }    from './workflows/build_references'
 
 include { paramsSummaryLog }    from 'plugin/nf-schema'
@@ -38,7 +38,7 @@ workflow {
     if (params.build_references) {
         BUILD_REFERENCES()
     } else {
-        SPREAD()
+        BELLA()
     }
 
     def emailFields = [:]
