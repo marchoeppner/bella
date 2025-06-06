@@ -377,6 +377,7 @@ A minimum spanning tree calculated by <a href="https://github.com/insapathogenom
         showBranchLengths: true,
         showLeafLabels: true,
         fontSize: 10,
+        branchLabelsFontSize: 10,
     }
   );
 </script>
@@ -389,10 +390,24 @@ A minimum spanning tree calculated by <a href="https://github.com/insapathogenom
             <button class="collapsible" style="background-color: {{cluster_color[cluster]}};">{{cluster}} (n={{samples|length}})</button>
             <div class="content">
                 <table class="hit-list">
+                        <tr>
+                          <td></td>
+                          <td>Sample</td>
+                          <td>Index</td>
+                          {% for pos in summary[samples[0]].matrix -%}
+                            <td bgcolor="lightgray" style="padding-left: 2px; padding-right: 2px;">{{loop.index}}</td>
+                          {% endfor %}
+                        </tr>
                         {% for sample in samples %}
                             <tr>
                                 <td></td>
                                 <td>{{sample}}</td>
+                                {% if summary[sample].matrix|length < 25 %}
+                                  <td width="10" bgcolor="lightgray" style="padding-left: 2px; padding-right: 2px" >{{loop.index}}</td>
+                                  {% for n in summary[sample].matrix -%}
+                                    <td style="text-align: center; border-left: 1px solid grey; min-width: 20px; ">{{n}}</td>
+                                  {% endfor %}
+                                {% endif %}
                             </tr>
                         {% endfor %}
                 </table>

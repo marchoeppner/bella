@@ -2,12 +2,10 @@
 import plotly.express as px
 from jinja2 import Template
 import datetime
-import pandas as pd
 import json
 import getpass
 import argparse
-import random
-import colorsys 
+import colorsys
 
 parser = argparse.ArgumentParser(description="Script options")
 parser.add_argument("--input", help="An input option")
@@ -27,9 +25,10 @@ status = {
     "missing": "missing"
 }
 
-def generate_distinct_colors(n): 
-    colors = [] 
-    for i in range(n): 
+
+def generate_distinct_colors(n):
+    colors = []
+    for i in range(n):
         # Generate a color in HSL 
         hue = i / n  # evenly spaced hues 
         lightness = 0.7  # fixed lightness 
@@ -39,7 +38,7 @@ def generate_distinct_colors(n):
         rgb = tuple(int(c * 255) for c in rgb) 
         # and turn into a hex color
         colors.append('#%02x%02x%02x' % rgb)
-    return colors 
+    return colors
 
 
 def main(json_file, template, output, version, call, wd, distance):
@@ -94,6 +93,7 @@ def main(json_file, template, output, version, call, wd, distance):
                     color = default_color
                 cluster_color[cluster] = color
             sample_color[sample] = cluster_color[cluster]
+
             summary[sample] = {"cluster": cluster, "distance": distance, "color": sample_color[sample]}
             if cluster in cluster_samples:
                 cluster_samples[cluster].append(sample)
@@ -103,6 +103,17 @@ def main(json_file, template, output, version, call, wd, distance):
         data["sample_color"] = sample_color
         data["cluster_color"] = cluster_color
         data["cluster_samples"] = cluster_samples
+
+    # subsetting distance matrix per cluster
+    distances = jdata["distance"]["data"]
+    for cluster, samples in cluster_samples.items():
+        indices = []
+        for sample in samples:
+            indices.append(jdata["distance"]["x"].index(sample))
+        for sample in samples:
+            this_distances = distances[jdata["distance"]["x"].index(sample)]
+            dmatrix = [this_distances[i] for i in indices]
+            summary[sample]["matrix"] = dmatrix
 
     # reporTree Locus report
     for locus in jdata["loci_report"]:
@@ -132,7 +143,7 @@ def main(json_file, template, output, version, call, wd, distance):
         summary[sample]["perc_classified"] = round(float(cstats["Classified_CDSs"]) / (float(cstats["Total_CDSs"])) * 100, 2)
 
     data["summary"] = summary
-    
+
     matrix = jdata["distance"]
 
     #############
