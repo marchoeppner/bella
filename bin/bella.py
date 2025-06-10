@@ -15,6 +15,7 @@ parser.add_argument("--template", help="A JINJA2 template")
 parser.add_argument("--version", help="Pipeline version")
 parser.add_argument("--call", help="Command line call")
 parser.add_argument("--wd", help="work directory")
+parser.add_argument("--cutoff", type=float, help="Calling cutoff")
 parser.add_argument("--distance", help="Distance for clustering")
 parser.add_argument("--output")
 
@@ -42,7 +43,7 @@ def generate_distinct_colors(n):
     return colors 
 
 
-def main(json_file, template, output, version, call, wd, distance):
+def main(json_file, template, output, version, call, wd, distance, cutoff):
 
     data = {}
 
@@ -52,6 +53,7 @@ def main(json_file, template, output, version, call, wd, distance):
     data["call"] = call
     data["wd"] = wd
     data["cluster_distance"] = distance
+    data["cutoff"] = cutoff
     data["summary"] = []
 
     with open(json_file) as f:
@@ -60,6 +62,26 @@ def main(json_file, template, output, version, call, wd, distance):
 
     data["nwk"] = jdata["tree"]
     summary = {}
+
+    # Chewbbaca stats - used to seed the sample dictionary (nothing dissapears here)
+    # Chewbbaca allele calling stats
+    for cstats in jdata["chewbbaca_stats"]:
+        sample = cstats["FILE"]
+        summary[sample] = {
+            "classified_cds": cstats["Classified_CDSs"],
+            "invalid_cds": cstats["Invalid CDSs"],
+            "total_cds": cstats["Total_CDSs"],
+            "perc_classified": round(float(cstats["Classified_CDSs"]) / (float(cstats["Total_CDSs"])) * 100, 2),
+            "reportree": {
+                "cluster": "NA",
+                "distance": "NA",
+                "color": "#ff3300"
+            },
+            "called": "NA",
+            "missing": "NA",
+            "pct_called": "NA",
+            "status": status["missing"]
+        }
 
     # ReporTree Cluster information
     if distance in jdata["clusters"]:
@@ -94,7 +116,7 @@ def main(json_file, template, output, version, call, wd, distance):
                     color = default_color
                 cluster_color[cluster] = color
             sample_color[sample] = cluster_color[cluster]
-            summary[sample] = {"cluster": cluster, "distance": distance, "color": sample_color[sample]}
+            summary[sample]["reportree"] = {"cluster": cluster, "distance": distance, "color": sample_color[sample]}
             if cluster in cluster_samples:
                 cluster_samples[cluster].append(sample)
             else:
@@ -114,22 +136,16 @@ def main(json_file, template, output, version, call, wd, distance):
         summary[sample]["pct_called"] = pct_called
 
         sample_status = status["missing"]
-        if (pct_called < 0.85):
-            sample_status = status["fail"]
-        elif (pct_called < 0.95):
+        if (pct_called >= cutoff):
+            print(f"{pct_called} is bigger than {cutoff}")
+            sample_status = status["pass"]
+        elif (pct_called >= (cutoff*0.95)):
             sample_status = status["warn"]
         else:
-            sample_status = status["pass"]
+            sample_status = status["fail"]
 
         summary[sample]["status"] = sample_status
 
-    # Chewbbaca allele calling stats
-    for cstats in jdata["chewbbaca_stats"]:
-        sample = cstats["FILE"]
-        summary[sample]["classified_cds"] = cstats["Classified_CDSs"]
-        summary[sample]["invalid_cds"] = cstats["Invalid CDSs"]
-        summary[sample]["total_cds"] = cstats["Total_CDSs"]
-        summary[sample]["perc_classified"] = round(float(cstats["Classified_CDSs"]) / (float(cstats["Total_CDSs"])) * 100, 2)
 
     data["summary"] = summary
     
@@ -165,4 +181,4 @@ def main(json_file, template, output, version, call, wd, distance):
 
 
 if __name__ == '__main__':
-    main(args.input, args.template, args.output, args.version, args.call, args.wd, args.distance)
+    main(args.input, args.template, args.output, args.version, args.call, args.wd, args.distance, 100*(args.cutoff))
