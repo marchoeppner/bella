@@ -14,14 +14,12 @@ process SUMMARY {
     path 'versions.yml'             , emit: versions
 
     script:
-    def args = task.ext.args ?: ''
     def prefix = task.ext.prefix ?: meta.sample_id
     result = prefix + '.json'
 
     """
     bella_json.py --schema $schema \\
     --yaml $yaml \\
-    $args \\
     --output $result
 
     cat <<-END_VERSIONS > versions.yml
