@@ -2,12 +2,10 @@
 import plotly.express as px
 from jinja2 import Template
 import datetime
-import pandas as pd
 import json
 import getpass
 import argparse
-import random
-import colorsys 
+import colorsys
 
 parser = argparse.ArgumentParser(description="Script options")
 parser.add_argument("--input", help="An input option")
@@ -28,9 +26,10 @@ status = {
     "missing": "missing"
 }
 
-def generate_distinct_colors(n): 
-    colors = [] 
-    for i in range(n): 
+
+def generate_distinct_colors(n):
+    colors = []
+    for i in range(n):
         # Generate a color in HSL 
         hue = i / n  # evenly spaced hues 
         lightness = 0.7  # fixed lightness 
@@ -40,7 +39,7 @@ def generate_distinct_colors(n):
         rgb = tuple(int(c * 255) for c in rgb) 
         # and turn into a hex color
         colors.append('#%02x%02x%02x' % rgb)
-    return colors 
+    return colors
 
 
 def main(json_file, template, output, version, call, wd, distance, cutoff):
@@ -53,8 +52,8 @@ def main(json_file, template, output, version, call, wd, distance, cutoff):
     data["call"] = call
     data["wd"] = wd
     data["cluster_distance"] = distance
-    data["cutoff"] = cutoff
     data["summary"] = []
+    data["cutoff"] = cutoff
 
     with open(json_file) as f:
         jdata = json.load(f)
@@ -124,7 +123,18 @@ def main(json_file, template, output, version, call, wd, distance, cutoff):
 
         data["sample_color"] = sample_color
         data["cluster_color"] = cluster_color
-        data["cluster_samples"] = dict(sorted(cluster_samples.items()))
+        data["cluster_samples"] = cluster_samples
+
+    # subsetting distance matrix per cluster
+    distances = jdata["distance"]["data"]
+    for cluster, samples in cluster_samples.items():
+        indices = []
+        for sample in samples:
+            indices.append(jdata["distance"]["x"].index(sample))
+        for sample in samples:
+            this_distances = distances[jdata["distance"]["x"].index(sample)]
+            dmatrix = [this_distances[i] for i in indices]
+            summary[sample]["matrix"] = dmatrix
 
     # reporTree Locus report
     for locus in jdata["loci_report"]:
@@ -136,19 +146,17 @@ def main(json_file, template, output, version, call, wd, distance, cutoff):
         summary[sample]["pct_called"] = pct_called
 
         sample_status = status["missing"]
-        if (pct_called >= cutoff):
-            print(f"{pct_called} is bigger than {cutoff}")
-            sample_status = status["pass"]
-        elif (pct_called >= (cutoff*0.95)):
+        if (pct_called < 0.85):
+            sample_status = status["fail"]
+        elif (pct_called < 0.95):
             sample_status = status["warn"]
         else:
-            sample_status = status["fail"]
+            sample_status = status["pass"]
 
         summary[sample]["status"] = sample_status
 
-
     data["summary"] = summary
-    
+
     matrix = jdata["distance"]
 
     #############
@@ -162,6 +170,9 @@ def main(json_file, template, output, version, call, wd, distance, cutoff):
                     x=matrix["x"],
                     y=matrix["y"]
                     )
+    fig.layout.height = len(matrix["x"]) * 40 if len(matrix["x"]) < 40 else 800
+    fig.layout.width = len(matrix["x"]) * 40 if len(matrix["x"]) < 40 else 1500
+
     data["distances"] = fig.to_html(full_html=False)
 
     ##############################
@@ -181,4 +192,4 @@ def main(json_file, template, output, version, call, wd, distance, cutoff):
 
 
 if __name__ == '__main__':
-    main(args.input, args.template, args.output, args.version, args.call, args.wd, args.distance, 100*(args.cutoff))
+    main(args.input, args.template, args.output, args.version, args.call, args.wd, args.distance, 100 * (args.cutoff))
