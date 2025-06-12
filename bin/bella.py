@@ -102,7 +102,7 @@ def main(json_file, template, output, version, call, wd, distance):
 
         data["sample_color"] = sample_color
         data["cluster_color"] = cluster_color
-        data["cluster_samples"] = cluster_samples
+        data["cluster_samples"] = dict(sorted(cluster_samples.items()))
 
     # subsetting distance matrix per cluster
     distances = jdata["distance"]["data"]
