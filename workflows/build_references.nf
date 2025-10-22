@@ -9,21 +9,30 @@ workflow BUILD_REFERENCES {
     def filters = []
     def assemblies = []
     def final_schemas = []
+
+    def species_list = get_species_list()
+
     /* 
     Building a list of schemas to download, pre-configured in the resources.config file
     */
     params.references.keySet().each { k ->
-        schemas << [ [ sample_id: k] , params.references[k].species_id, params.references[k].schema_id ]
-        assemblies << [ [ sample_id: k], file(params.references[k].ref) ]
-        final_schemas << [ [ sample_id: k], file(params.references[k].db)]
-        if (params.references[k].filter ) {
-            filters << [ [ sample_id: k], params.references[k].filter ]
-            final_schemas << [ [ sample_id: k], file(params.references[k].efsa) ]
+        def species = params.references[k].species
+        if (species_list[species]) {
+            schemas << [ [ sample_id: k] , species_list[species], params.references[k].schema_id ]
+            assemblies << [ [ sample_id: k], file(params.references[k].ref) ]
+            final_schemas << [ [ sample_id: k], file(params.references[k].db)]
+            if (params.references[k].filter ) {
+                filters << [ [ sample_id: k], params.references[k].filter ]
+                final_schemas << [ [ sample_id: k], file(params.references[k].efsa) ]
+            }
+        } else {
+            log.warn "Missing schema for ${species}!!!"
         }
     }
 
     ch_schemas = Channel.fromList(schemas)
-    ch_filters = Channel.fromList(filters)
+    //ch_filters = Channel.fromList(filters)
+    ch_filters = Channel.empty()
     ch_assemblies = Channel.fromList(assemblies)
 
     // Download the schema by id
@@ -66,4 +75,19 @@ workflow BUILD_REFERENCES {
     CHEWBBACA_ALLELECALL_INSTALL(
         ch_schema_with_assemblies
     )
+}
+
+def get_species_list() {
+
+    def j = new groovy.json.JsonSlurper().parseText(new URL("https://chewbbaca.online/NS/api/species/list").getText())
+
+    def species = [:]
+    
+    j.each { s ->
+        def url = s.species.value
+        def name = s.name.value
+        species[name] = url.split("/")[-1]
+    }
+
+    return species
 }
