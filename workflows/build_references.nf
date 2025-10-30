@@ -31,8 +31,8 @@ workflow BUILD_REFERENCES {
     }
 
     ch_schemas = Channel.fromList(schemas)
-    //ch_filters = Channel.fromList(filters)
-    ch_filters = Channel.empty()
+    ch_filters = Channel.fromList(filters)
+    //ch_filters = Channel.empty()
     ch_assemblies = Channel.fromList(assemblies)
 
     // Download the schema by id
