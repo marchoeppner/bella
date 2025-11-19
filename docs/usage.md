@@ -132,7 +132,7 @@ sample_0008	B	B3	clinical	12/09/2021	217	not_real_data_test_only
 ```
 ### `--parallel_calling` [ default = false ]
 
-SPREAD will run Chewbbaca in bulk mode by default (i.e. all assemblies are analysed in the same process). This saves startup time and is recommended for smaller data sets (< 100 samples). If you are analyzing very large data sets, it can instead be preferrable to compute allele profiles per assembly in parallel to make full use of larger compute infrastructures. For that, use this option. This has the added advantage of allowing you to add additional assemblies later without the need to recompute all the allele profiles. 
+BELLA will run Chewbbaca in bulk mode by default (i.e. all assemblies are analysed in the same process). This saves startup time and is recommended for smaller data sets (< 100 samples). If you are analyzing very large data sets, it can instead be preferrable to compute allele profiles per assembly in parallel to make full use of larger compute infrastructures. For that, use this option. This has the added advantage of allowing you to add additional assemblies later without the need to recompute all the allele profiles. 
 
 ### `--species` [ default = null]
 
