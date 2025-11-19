@@ -138,12 +138,14 @@ SPREAD will run Chewbbaca in bulk mode by default (i.e. all assemblies are analy
 
 A schema for a pre-configured species. Currently supported options are:
 
-- campylobacter
-- escherichia
-- listeria
-- salmonella
+| species/genus | Source | Description | Has EFSA schema | Default cluster distance |
+| ------------- | ------ | ----------- | --------------- | ------------------------ |
+| campylobacter | [ChewieNS](https://chewbbaca.online/species/4/schemas/1) | INNUENDO whole genome MLST schema for Campylobacter jejuni | No | 7 |
+| escherichia   | [ChewieNS](https://chewbbaca.online/species/5/schemas/1) | INNUENDO whole genome MLST schema for Escherichia coli | Yes | 10 |
+| listeria      | [ChewieNS](https://chewbbaca.online/species/6/schemas/1) | Listeria monocytogenes cgMLST scheme from BIGSdb-Pasteur | No | 10 |
+| salmonella    | [ChewieNS](https://chewbbaca.online/species/8/schemas/1) | INNUENDO whole genome MLST schema for Salmonella enterica | Yes | 10 |
 
-May optionally be combined with `--efsa`. Mutually exclusive with `--schema`. 
+Where available, `--species` may optionally be combined with `--efsa`. Mutually exclusive with `--schema`. 
 
 ### `--distance` [ default = null ]
 

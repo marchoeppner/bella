@@ -35,6 +35,7 @@ def parse_csv(lines):
         data.append(this_data)
     return data
 
+
 def parse_matrix(lines):
 
     data = []
@@ -51,6 +52,7 @@ def parse_matrix(lines):
 
     bucket["data"] = data
     return bucket
+
 
 def parse_tabular(lines):
     header = lines.pop(0).strip().split("\t")
@@ -75,6 +77,7 @@ def parse_tabular(lines):
 
     return data
 
+
 def parse_partitions(lines):
 
     data = {}
@@ -82,18 +85,33 @@ def parse_partitions(lines):
 
     # we only store the first 30 partitions
     for dist in list(range(30)):
-        partition = header.index(f"MST-{dist}x1.0")
 
-        this_data = {}
-        for line in lines:
-            values = line.split("\t")
-            cluster = values[partition]
-            sample = values.pop(0)
-            this_data[sample] = cluster
+        if (f"MST-{dist}x1.0") in header:
+            partition = header.index(f"MST-{dist}x1.0")
 
-        data[dist] = this_data
+            this_data = {}
+            for line in lines:
+                values = line.split("\t")
+                cluster = values[partition]
+                sample = values.pop(0)
+                this_data[sample] = cluster
+
+            data[dist] = this_data
 
     return data
+
+
+def parse_log(lines):
+
+    data = {}
+    for line in lines:
+
+        key, value = line.split(": ")
+        k = "_".join(key.lower().split(" "))
+        data[k] = value
+
+    return data
+
 
 def parse_yaml(lines):
 
@@ -148,6 +166,8 @@ def main(yaml_file, schema, output):
             matrix["clusters"] = parse_partitions(lines)
         elif re.search(".loci_report.tsv", file):
             matrix["loci_report"] = parse_tabular(lines)
+        elif re.search("logging_info.txt", file):
+            matrix["analysis_info"] = parse_log(lines)
         elif re.search("results_statistics.tsv", file):
             info = parse_tabular(lines)
             for i in info:

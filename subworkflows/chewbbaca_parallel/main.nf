@@ -10,7 +10,7 @@ workflow CHEWBBACA_PARALLEL {
 
     main:
 
-    ch_versions = Channel.from([])
+    ch_versions = channel.from([])
 
     // Perform allele calling per assembly
     CHEWBBACA_ALLELECALL(
@@ -39,6 +39,7 @@ workflow CHEWBBACA_PARALLEL {
     emit:
     versions = ch_versions
     matrix = CHEWBBACA_EXTRACTCGMLST.out.report
+    logs = CHEWBBACA_ALLELECALL.out.logs
     stats = CHEWBBACA_ALLELECALL.out.stats
 
 }

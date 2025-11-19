@@ -43,7 +43,7 @@
     .active, .collapsible:hover { background-color: #ccc; }
     .content { padding: 0 18px; display: none;  }
     .hit-list td { border-bottom: solid 1px rgb(9, 8, 66); padding: 1px; }
-    #cluster-list { padding: 5px; }
+    #cluster-list { padding: 5px; height: 800px; overflow: auto ; padding-bottom: 50px; }
     .pagination-container { margin-top: 5px; }
     .pagination {  margin: 0;  padding: 0; }
     .pagination li { float: left; list-style: none; margin-right: 0.5em;}
@@ -125,13 +125,14 @@ The summary table with all key metrics per sample
         <tr>
             <th scope="col">Sample</th>
             <th scope="col">Status</th>
-            <th scope="col" colspan=3><div class="tooltip">Chewbbaca<span class="tooltiptext">Chewbbaca allele calling</span></div></th>
+            <th scope="col" colspan=4><div class="tooltip">Chewbbaca<span class="tooltiptext">Chewbbaca allele calling</span></div></th>
             <th scope="col" colspan=5><div class="tooltip">ReporTree</span></div></th>
         </tr>
         <tr class="row">
             <th scope="subcol-inactive"></th>
             <th scope="subcol-inactive"></th>
             <th scope="subcol-inactive"></th>
+            <th scope="subcol-inactive">Schema Loci</th>
             <th scope="subcol-inactive">Total_CDSs</th>
             <th scope="subcol-inactive">Classified CDSs</th>
             <th scope="subcol-inactive">% classified</th>
@@ -147,14 +148,15 @@ The summary table with all key metrics per sample
         <tr>
             <td scope="sample-id">{{sample}}</td>
             <td scope="{{data.status}}">{{data.status}}</td>
+            <td>{{analysis.number_of_loci}}</td> 
             <td>{{data.total_cds}}</td> 
             <td>{{data.classified_cds}}</td>
             <td>{{data.perc_classified}}</td>
             <td>{{data.called}}</td>
             <td>{{data.missing}}</td>
             <td>{{data.pct_called}}</td>
-            <td>{{data.distance}}</td>
-            <td bgcolor="{{data.color}}">{{data.cluster}}</td>
+            <td>{{data.reportree.distance}}</td>
+            <td bgcolor="{{data.reportree.color}}">{{data.reportree.cluster}}</td>
         </tr>
     {% endfor %}
     </tbody>
@@ -364,7 +366,7 @@ A minimum spanning tree calculated by <a href="https://github.com/insapathogenom
   const tree = new phylocanvas.PhylocanvasGL(
   document.querySelector("#phylocanvas"),
     {
-        size: { width: 1600, height: 600 },
+        size: { width: 1600, height: 800 },
         source: `{{nwk}}`,
         styles: {
             {% for sample,color in sample_color.items() -%}
@@ -377,6 +379,7 @@ A minimum spanning tree calculated by <a href="https://github.com/insapathogenom
         showBranchLengths: true,
         showLeafLabels: true,
         fontSize: 10,
+        branchLabelsFontSize: 10,
     }
   );
 </script>
@@ -389,10 +392,26 @@ A minimum spanning tree calculated by <a href="https://github.com/insapathogenom
             <button class="collapsible" style="background-color: {{cluster_color[cluster]}};">{{cluster}} (n={{samples|length}})</button>
             <div class="content">
                 <table class="hit-list">
+                        <tr>
+                          <td></td>
+                          <td>Sample</td>
+                          <td>Index</td>
+                          {% if summary[samples[0]].matrix|length < 25 %}
+                            {% for pos in summary[samples[0]].matrix -%}
+                              <td bgcolor="lightgray" style="padding-left: 2px; padding-right: 2px;">{{loop.index}}</td>
+                            {% endfor %}
+                          {% endif %}
+                        </tr>
                         {% for sample in samples %}
                             <tr>
                                 <td></td>
                                 <td>{{sample}}</td>
+                                {% if summary[sample].matrix|length < 25 %}
+                                  <td width="10" bgcolor="lightgray" style="padding-left: 2px; padding-right: 2px" >{{loop.index}}</td>
+                                  {% for n in summary[sample].matrix -%}
+                                    <td style="text-align: center; border-left: 1px solid grey; min-width: 20px; ">{{n}}</td>
+                                  {% endfor %}
+                                {% endif %}
                             </tr>
                         {% endfor %}
                 </table>

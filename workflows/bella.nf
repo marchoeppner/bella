@@ -21,11 +21,11 @@ workflow BELLA {
     main:
 
     // Subworkflows
-    ch_multiqc_config   = params.multiqc_config   ? Channel.fromPath(params.multiqc_config, checkIfExists: true).collect() : Channel.value([])
-    ch_multiqc_logo     = params.multiqc_logo     ? Channel.fromPath(params.multiqc_logo, checkIfExists: true).collect() : Channel.value([])
-    ch_bella_template  = params.template         ? Channel.fromPath(params.template, checkIfExists: true).collect() : Channel.value([])
+    ch_multiqc_config   = params.multiqc_config   ? channel.fromPath(params.multiqc_config, checkIfExists: true).collect() : channel.value([])
+    ch_multiqc_logo     = params.multiqc_logo     ? channel.fromPath(params.multiqc_logo, checkIfExists: true).collect() : channel.value([])
+    ch_bella_template   = params.template         ? channel.fromPath(params.template, checkIfExists: true).collect() : channel.value([])
 
-    samplesheet         = params.input ? Channel.fromPath(params.input, checkIfExists:true ).collect() : Channel.from([])
+    samplesheet         = params.input ? channel.fromPath(params.input, checkIfExists:true ).collect() : channel.from([])
 
     /*
     Get the corect schema to use - either from a pre-configured species or as user-provided path
@@ -35,31 +35,33 @@ workflow BELLA {
             ch_distance = params.references[params.species].distance
             if (params.efsa) {
                 if (params.references[params.species].efsa) {
-                    ch_chewie_schema = Channel.fromPath(params.references[params.species].efsa)
+                    ch_chewie_schema = channel.fromPath(params.references[params.species].efsa)
                 } else {
                     log.warn "No EFSA schema defined for ${params.species} - falling back to default schema."
-                    ch_chewie_schema = Channel.fromPath(params.references[params.species].db)
+                    ch_chewie_schema = channel.fromPath(params.references[params.species].db)
                 }
             } else {
-                ch_chewie_schema = Channel.fromPath(params.references[params.species].db)
+                ch_chewie_schema = channel.fromPath(params.references[params.species].db)
             }
         } else {
             log.warn "Could not find a pre-configured schema for ${params.species}\nValid schemas are: ${params.references.keySet().join(' ')}\nExiting!"
             System.exit(1)
         }
     } else {
-        ch_chewie_schema = params.schema ? Channel.fromPath(params.schema, checkIfExists: true).collect() : Channel.from([])
+        ch_chewie_schema = params.schema ? channel.fromPath(params.schema, checkIfExists: true).collect() : channel.from([])
     }
     
     if (params.distance) {
         ch_distance = params.distance
     }
     
-    ch_nomenclature     = params.nomenclature ? file(params.nomenclature, checkIfExists: true) : Channel.from(false)
-    ch_metadata         = params.metadata ? file(params.metadata, checkIfExists: true) : Channel.from(false)
+    ch_nomenclature     = params.nomenclature ? file(params.nomenclature, checkIfExists: true) : channel.from(false)
+    ch_metadata         = params.metadata ? file(params.metadata, checkIfExists: true) : channel.from(false)
 
-    ch_versions = Channel.from([])
-    multiqc_files = Channel.from([])
+    ch_versions = channel.from([])
+    multiqc_files = channel.from([])
+
+    pipeline_info = channel.fromPath(dumpParametersToJSON(params.outdir)).collect()
 
     /*
     Check that the samplesheet is valid
@@ -77,7 +79,7 @@ workflow BELLA {
             ch_chewie_schema.collect()
         )
         ch_matrix = CHEWBBACA_PARALLEL.out.matrix
-        ch_chewie_stats = CHEWBBACA_PARALLEL.out.stats
+        ch_chewie_stats = CHEWBBACA_PARALLEL.out.stats.mix(CHEWBBACA_PARALLEL.out.logs)
         ch_versions = ch_versions.mix(CHEWBBACA_PARALLEL.out.versions)
     } else {
         /*
@@ -89,7 +91,7 @@ workflow BELLA {
             ch_chewie_schema.collect()
         )
         ch_matrix = CHEWBBACA_SERIAL.out.matrix
-        ch_chewie_stats = CHEWBBACA_SERIAL.out.stats
+        ch_chewie_stats = CHEWBBACA_SERIAL.out.stats.mix(CHEWBBACA_SERIAL.out.logs)
         ch_versions = ch_versions.mix(CHEWBBACA_SERIAL.out.versions)
     }
     
@@ -164,4 +166,17 @@ def combine_partitions(partitions,dist) {
     }
 
     return parts.join(",")
+}
+
+// turn the summaryMap to a JSON file
+def dumpParametersToJSON(outdir) {
+    def timestamp = new java.util.Date().format('yyyy-MM-dd_HH-mm-ss')
+    def filename  = "params_${timestamp}.json"
+    def temp_pf   = new File(workflow.launchDir.toString(), ".${filename}")
+    def jsonStr   = groovy.json.JsonOutput.toJson(params)
+    temp_pf.text  = groovy.json.JsonOutput.prettyPrint(jsonStr)
+
+    nextflow.extension.FilesEx.copyTo(temp_pf.toPath(), "${outdir}/pipeline_info/params_${timestamp}.json")
+    temp_pf.delete()
+    return file("${outdir}/pipeline_info/params_${timestamp}.json")
 }

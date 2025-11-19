@@ -2,12 +2,10 @@
 import plotly.express as px
 from jinja2 import Template
 import datetime
-import pandas as pd
 import json
 import getpass
 import argparse
-import random
-import colorsys 
+import colorsys
 
 parser = argparse.ArgumentParser(description="Script options")
 parser.add_argument("--input", help="An input option")
@@ -15,6 +13,7 @@ parser.add_argument("--template", help="A JINJA2 template")
 parser.add_argument("--version", help="Pipeline version")
 parser.add_argument("--call", help="Command line call")
 parser.add_argument("--wd", help="work directory")
+parser.add_argument("--cutoff", type=float, help="Calling cutoff")
 parser.add_argument("--distance", help="Distance for clustering")
 parser.add_argument("--output")
 
@@ -27,22 +26,23 @@ status = {
     "missing": "missing"
 }
 
-def generate_distinct_colors(n): 
-    colors = [] 
-    for i in range(n): 
-        # Generate a color in HSL 
-        hue = i / n  # evenly spaced hues 
-        lightness = 0.7  # fixed lightness 
+
+def generate_distinct_colors(n):
+    colors = []
+    for i in range(n):
+        # Generate a color in HSL
+        hue = i / n  # evenly spaced hues
+        lightness = 0.7  # fixed lightness
         saturation = 0.7  # 70% saturation for a pastelle palette
-        rgb = colorsys.hls_to_rgb(hue, lightness, saturation) 
-        # Convert from [0, 1] to [0, 255] and round 
-        rgb = tuple(int(c * 255) for c in rgb) 
+        rgb = colorsys.hls_to_rgb(hue, lightness, saturation)
+        # Convert from [0, 1] to [0, 255] and round
+        rgb = tuple(int(c * 255) for c in rgb)
         # and turn into a hex color
         colors.append('#%02x%02x%02x' % rgb)
-    return colors 
+    return colors
 
 
-def main(json_file, template, output, version, call, wd, distance):
+def main(json_file, template, output, version, call, wd, distance, cutoff):
 
     data = {}
 
@@ -53,13 +53,36 @@ def main(json_file, template, output, version, call, wd, distance):
     data["wd"] = wd
     data["cluster_distance"] = distance
     data["summary"] = []
+    data["cutoff"] = cutoff
 
     with open(json_file) as f:
         jdata = json.load(f)
         f.close
 
     data["nwk"] = jdata["tree"]
+    data["analysis"] = jdata["analysis_info"]
+
     summary = {}
+
+    # Chewbbaca stats - used to seed the sample dictionary (nothing dissapears here)
+    # Chewbbaca allele calling stats
+    for cstats in jdata["chewbbaca_stats"]:
+        sample = cstats["FILE"]
+        summary[sample] = {
+            "classified_cds": cstats["Classified_CDSs"],
+            "invalid_cds": cstats["Invalid CDSs"],
+            "total_cds": cstats["Total_CDSs"],
+            "perc_classified": round(float(cstats["Classified_CDSs"]) / (float(cstats["Total_CDSs"])) * 100, 2),
+            "reportree": {
+                "cluster": "NA",
+                "distance": "NA",
+                "color": "#ff3300"
+            },
+            "called": "NA",
+            "missing": "NA",
+            "pct_called": "NA",
+            "status": status["missing"]
+        }
 
     # ReporTree Cluster information
     if distance in jdata["clusters"]:
@@ -94,7 +117,7 @@ def main(json_file, template, output, version, call, wd, distance):
                     color = default_color
                 cluster_color[cluster] = color
             sample_color[sample] = cluster_color[cluster]
-            summary[sample] = {"cluster": cluster, "distance": distance, "color": sample_color[sample]}
+            summary[sample]["reportree"] = {"cluster": cluster, "distance": distance, "color": sample_color[sample]}
             if cluster in cluster_samples:
                 cluster_samples[cluster].append(sample)
             else:
@@ -103,6 +126,17 @@ def main(json_file, template, output, version, call, wd, distance):
         data["sample_color"] = sample_color
         data["cluster_color"] = cluster_color
         data["cluster_samples"] = cluster_samples
+
+    # subsetting distance matrix per cluster
+    distances = jdata["distance"]["data"]
+    for cluster, samples in cluster_samples.items():
+        indices = []
+        for sample in samples:
+            indices.append(jdata["distance"]["x"].index(sample))
+        for sample in samples:
+            this_distances = distances[jdata["distance"]["x"].index(sample)]
+            dmatrix = [this_distances[i] for i in indices]
+            summary[sample]["matrix"] = dmatrix
 
     # reporTree Locus report
     for locus in jdata["loci_report"]:
@@ -123,16 +157,8 @@ def main(json_file, template, output, version, call, wd, distance):
 
         summary[sample]["status"] = sample_status
 
-    # Chewbbaca allele calling stats
-    for cstats in jdata["chewbbaca_stats"]:
-        sample = cstats["FILE"]
-        summary[sample]["classified_cds"] = cstats["Classified_CDSs"]
-        summary[sample]["invalid_cds"] = cstats["Invalid CDSs"]
-        summary[sample]["total_cds"] = cstats["Total_CDSs"]
-        summary[sample]["perc_classified"] = round(float(cstats["Classified_CDSs"]) / (float(cstats["Total_CDSs"])) * 100, 2)
-
     data["summary"] = summary
-    
+
     matrix = jdata["distance"]
 
     #############
@@ -146,6 +172,9 @@ def main(json_file, template, output, version, call, wd, distance):
                     x=matrix["x"],
                     y=matrix["y"]
                     )
+    fig.layout.height = len(matrix["x"]) * 40 if len(matrix["x"]) < 40 else 800
+    fig.layout.width = len(matrix["x"]) * 40 if len(matrix["x"]) < 40 else 1500
+
     data["distances"] = fig.to_html(full_html=False)
 
     ##############################
@@ -165,4 +194,4 @@ def main(json_file, template, output, version, call, wd, distance):
 
 
 if __name__ == '__main__':
-    main(args.input, args.template, args.output, args.version, args.call, args.wd, args.distance)
+    main(args.input, args.template, args.output, args.version, args.call, args.wd, args.distance, 100 * (args.cutoff))
