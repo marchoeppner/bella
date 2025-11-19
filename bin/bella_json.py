@@ -101,6 +101,18 @@ def parse_partitions(lines):
     return data
 
 
+def parse_log(lines):
+
+    data = {}
+    for line in lines:
+
+        key, value = line.split(": ")
+        k = "_".join(key.lower().split(" "))
+        data[k] = value
+
+    return data
+
+
 def parse_yaml(lines):
 
     data = {}
@@ -154,6 +166,8 @@ def main(yaml_file, schema, output):
             matrix["clusters"] = parse_partitions(lines)
         elif re.search(".loci_report.tsv", file):
             matrix["loci_report"] = parse_tabular(lines)
+        elif re.search("logging_info.txt", file):
+            matrix["analysis_info"] = parse_log(lines)
         elif re.search("results_statistics.tsv", file):
             info = parse_tabular(lines)
             for i in info:

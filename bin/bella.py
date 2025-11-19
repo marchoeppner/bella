@@ -60,6 +60,8 @@ def main(json_file, template, output, version, call, wd, distance, cutoff):
         f.close
 
     data["nwk"] = jdata["tree"]
+    data["analysis"] = jdata["analysis_info"]
+
     summary = {}
 
     # Chewbbaca stats - used to seed the sample dictionary (nothing dissapears here)

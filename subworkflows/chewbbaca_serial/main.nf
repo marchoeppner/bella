@@ -10,7 +10,7 @@ workflow CHEWBBACA_SERIAL {
 
     main:
 
-    ch_versions = Channel.from([])
+    ch_versions = channel.from([])
 
     /*
     Perform joint allele calling - this may be too slow for large data sets, may need adjusting
@@ -33,7 +33,7 @@ workflow CHEWBBACA_SERIAL {
     )
     ch_versions = ch_versions.mix(CHEWBBACA_ALLELECALLEVALUATOR.out.versions)
 
-    // Filter matrix for valid positions
+    // Filter matrix for valid positions, this removes Chewbbaca codes that have no use here
     CHEWBBACA_EXTRACTCGMLST(
         CHEWBBACA_ALLELECALL.out.profile
     )
@@ -42,6 +42,7 @@ workflow CHEWBBACA_SERIAL {
     emit:
     versions = ch_versions
     matrix = CHEWBBACA_EXTRACTCGMLST.out.report
+    logs = CHEWBBACA_ALLELECALL.out.logs
     stats = CHEWBBACA_ALLELECALL.out.stats
 
 }
