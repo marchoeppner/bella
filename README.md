@@ -11,7 +11,7 @@ This pipeline takes assembled bacterial genomes as input and performs a clusteri
 
 BELLA is primarily meant to be used with foodborne pathogens, such as Campylobacter, E. coli, Listeria monocytogenes and Salmonella enteria (i.e. it comes with allele schemas for these four species). Other species are supported of course, if you provide a compatible schema database (Chewbbaca v3.3x).
 
-<b>Please note:</b> BELLA works with 'locked' schemas, meaning unlike the default <i>modus operandus</i> in Chewbbaca, new samples are not automatically added to the schema. Instead, analyses are always performed against the schema you originally installed. This is meant to prevent accidental conflicts arising from simultaneous access to the schema from two users or pipeline runs as well as accidentally conatminating the schema with bad samples. But more importantly, it ensures that analyses are reproducible across sites. If you find this to be limiting, please open an issue and we will look into ways to support 'open' schemas. 
+<b>Please note:</b> BELLA works with 'locked' schemas, meaning unlike the default <i>modus operandus</i> in Chewbbaca, new samples are not automatically added to the schema. Instead, analyses are always performed against the schema you originally installed. This is meant to prevent accidental conflicts arising from simultaneous access to the schema from two users or pipeline runs as well as accidentally contaminating the schema with bad samples. But more importantly, it ensures that analyses are reproducible across sites. If you find this to be limiting, please open an issue and we will look into ways to support 'open' schemas. 
 
 ## Documentation 
 
