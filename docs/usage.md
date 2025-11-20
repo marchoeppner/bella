@@ -113,7 +113,7 @@ Note that ReporTree will always fall back to the built-in nomenclature system wh
 
 Some more information on how nomenclatures in ReporTree work [here](https://github.com/insapathogenomics/ReporTree/wiki/3.-Nomenclature).
 
-### `--metadata` [defualt = null]
+### `--metadata` [default = null]
 
 A metadata file that associates samples with relevant information about e.g. date of sampling, sampling context (e.g. clinical vs food_processing etc). The choice of metadata keys is up to you and they do not have an influence on the analysis as such, but can be used during visualization etc to reveal patterns.
 
@@ -132,7 +132,7 @@ sample_0008	B	B3	clinical	12/09/2021	217	not_real_data_test_only
 ```
 ### `--parallel_calling` [ default = false ]
 
-SPREAD will run Chewbbaca in bulk mode by default (i.e. all assemblies are analysed in the same process). This saves startup time and is recommended for smaller data sets (< 100 samples). If you are analyzing very large data sets, it can instead be preferrable to compute allele profiles per assembly in parallel to make full use of larger compute infrastructures. For that, use this option. This has the added advantage of allowing you to add additional assemblies later without the need to recompute all the allele profiles. 
+BELLA will run Chewbbaca in bulk mode by default (i.e. all assemblies are analysed in the same process). This saves startup time and is recommended for smaller data sets (< 100 samples). If you are analyzing very large data sets, it can instead be preferrable to compute allele profiles per assembly in parallel to make full use of larger compute infrastructures. For that, use this option. This has the added advantage of allowing you to add additional assemblies later without the need to recompute all the allele profiles. 
 
 ### `--species` [ default = null]
 
