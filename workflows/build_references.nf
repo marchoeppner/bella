@@ -30,10 +30,10 @@ workflow BUILD_REFERENCES {
         }
     }
 
-    ch_schemas = Channel.fromList(schemas)
-    ch_filters = Channel.fromList(filters)
-    //ch_filters = Channel.empty()
-    ch_assemblies = Channel.fromList(assemblies)
+    ch_schemas = channel.fromList(schemas)
+    ch_filters = channel.fromList(filters)
+    //ch_filters = channel.empty()
+    ch_assemblies = channel.fromList(assemblies)
 
     // Download the schema by id
     CHEWBBACA_DOWNLOADSCHEMA(
