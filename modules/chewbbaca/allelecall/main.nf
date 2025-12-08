@@ -1,5 +1,7 @@
 process CHEWBBACA_ALLELECALL {
 
+    maxForks 1
+
     tag "${meta.sample_id}"
 
     label 'short_parallel'
