@@ -3,7 +3,7 @@ process REPORTREE {
 
     label 'short_serial'
 
-    container "docker://mhoeppner/reportree:2.5.3"
+    container "docker://mhoeppner/reportree:2.6.0"
 
     input:
     tuple val(meta), path(alleles)
