@@ -83,20 +83,19 @@ def parse_partitions(lines):
     data = {}
     header = lines.pop(0).strip().split("\t")
 
-    # we only store the first 30 partitions
-    for dist in list(range(30)):
+    for i, h in enumerate(header[:29]):
+        # Skip the first column since this is just the sample name
+        if i == 0:
+            continue
+        this_data = {}
+        for line in lines:
+            values = line.split("\t")
+            cluster = values[i]
+            sample = values.pop(0)
+            this_data[sample] = cluster
 
-        if (f"MST-{dist}x1.0") in header:
-            partition = header.index(f"MST-{dist}x1.0")
-
-            this_data = {}
-            for line in lines:
-                values = line.split("\t")
-                cluster = values[partition]
-                sample = values.pop(0)
-                this_data[sample] = cluster
-
-            data[dist] = this_data
+        key = h.split("-")[1].split("x")[0]
+        data[key] = this_data
 
     return data
 
@@ -162,7 +161,8 @@ def main(yaml_file, schema, output):
             matrix["distance"] = parse_matrix(lines)
         elif re.search(".nwk", file):
             matrix["tree"] = "\n".join(lines)
-        elif re.search(".partitions.tsv", file):
+        elif re.search("_partitions.tsv", file):
+            print("Found Cluster file!")
             matrix["clusters"] = parse_partitions(lines)
         elif re.search(".loci_report.tsv", file):
             matrix["loci_report"] = parse_tabular(lines)

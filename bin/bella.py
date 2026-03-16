@@ -126,6 +126,8 @@ def main(json_file, template, output, version, call, wd, distance, cutoff):
         data["sample_color"] = sample_color
         data["cluster_color"] = cluster_color
         data["cluster_samples"] = cluster_samples
+    else:
+        print("No data for the requested distance in this file!")
 
     # subsetting distance matrix per cluster
     distances = jdata["distance"]["data"]
