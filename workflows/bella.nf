@@ -26,7 +26,7 @@ workflow BELLA {
     ch_previous_profiles = Channel.from([])
 
     samplesheet         = params.input ? channel.fromPath(params.input, checkIfExists:true ).collect() : channel.from([])
-    existing_profiles   = params.profiles ? channel.fromPath(params.profiles, checkIfExists: true). collect() : channel.from([])
+    existing_profiles   = params.alleles ? channel.fromPath(params.alleles, checkIfExists: true). collect() : channel.from([])
 
     /*
     Get the corect schema to use - either from a pre-configured species or as user-provided path
@@ -147,15 +147,6 @@ workflow BELLA {
 
     emit:
     qc = MULTIQC.out.report
-}
-
-def combine_partitions(partitions,dist) {
-    def parts = partitions.tokenize(",")
-    if (!parts.contains(dist)) {
-        parts.add(dist)
-    }
-
-    return parts.join(",")
 }
 
 // turn the summaryMap to a JSON file

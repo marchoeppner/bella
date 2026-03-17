@@ -17,8 +17,8 @@ class WorkflowPipeline {
                 log.info 'Must provide a run_name (--run_name)'
                 System.exit(1)
             }
-            if (!params.input) {
-                log.info "Pipeline requires a sample sheet as input (--input)"
+            if (!params.input && !params.alleles) {
+                log.info "Pipeline requires a sample sheet as input (--input and/or --alleles)"
                 System.exit(1)
             }
             if (params.species && params.schema) {
