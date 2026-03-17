@@ -61,6 +61,7 @@ workflow BELLA {
 
     ch_versions = channel.from([])
     multiqc_files = channel.from([])
+    ch_chewie_stats = Channel.from([ [[sample_id: params.run_name],file("${baseDir}/assets/email_template.txt")] ])
 
     pipeline_info = channel.fromPath(dumpParametersToJSON(params.outdir)).collect()
 
@@ -81,7 +82,7 @@ workflow BELLA {
         ch_chewie_schema.collect(),
     )
     ch_matrix = CHEWBBACA_ALLELECALLING.out.matrix
-    ch_chewie_stats = CHEWBBACA_ALLELECALLING.out.stats.mix(CHEWBBACA_ALLELECALLING.out.logs)
+    ch_chewie_stats = ch_chewie_stats.mix(CHEWBBACA_ALLELECALLING.out.stats.mix(CHEWBBACA_ALLELECALLING.out.logs))
     ch_versions = ch_versions.mix(CHEWBBACA_ALLELECALLING.out.versions)
     
     /*
@@ -103,27 +104,18 @@ workflow BELLA {
 
     REPORTREE.out.results.join(
         ch_chewie_schema.map { s ->
-            [
-                [ sample_id: params.run_name],
-                s
-            ]
+            tuple([sample_id: params.run_name], s)
         }
     ).join(
         CUSTOM_DUMPSOFTWAREVERSIONS.out.yml.map { y ->
-            [
-                [ sample_id: params.run_name],
-                y
-            ]
+            tuple([sample_id: params.run_name], y)
         }
     ).join(
-      ch_chewie_stats.map { m,s ->
-        [
-            [ sample_id: params.run_name],
-            s
-        ]
-      }.groupTuple()
+        ch_chewie_stats.map { m ,s ->
+            tuple([sample_id: params.run_name], s)
+        }
     ).set { ch_summary_input }
-
+    
     // Summarize results as JSON
     SUMMARY(
         ch_summary_input,

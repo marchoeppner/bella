@@ -156,6 +156,7 @@ def main(yaml_file, schema, settings_json, output):
         "schema": schema, 
         "software": versions,
         "chewbbaca_stats": [],
+        "analysis_info": {},
         "settings": settings
     }
 
