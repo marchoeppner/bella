@@ -96,7 +96,7 @@ workflow BELLA {
         ch_chewie_schema.collect(),
     )
     ch_matrix = CHEWBBACA_ALLELECALLING.out.matrix
-    ch_chewie_stats = ch_chewie_stats.mix(CHEWBBACA_ALLELECALLING.out.stats.mix(CHEWBBACA_ALLELECALLING.out.logs))
+    ch_chewie_stats = ch_chewie_stats.mix(CHEWBBACA_ALLELECALLING.out.stats).mix(CHEWBBACA_ALLELECALLING.out.logs)
     ch_versions = ch_versions.mix(CHEWBBACA_ALLELECALLING.out.versions)
     
     /*
