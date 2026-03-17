@@ -20,7 +20,11 @@ workflow CHEWBBACA_ALLELECALLING {
     )
     ch_versions = ch_versions.mix(CHEWBBACA_ALLELECALL.out.versions)    
 
-    ch_profiles = CHEWBBACA_ALLELECALL.out.profile.mix(pre_computed)
+    if (params.hashed) {
+        ch_profiles = CHEWBBACA_ALLELECALL.out.hashed_profile.mix(pre_computed)
+    } else {
+        ch_profiles = CHEWBBACA_ALLELECALL.out.profile.mix(pre_computed)
+    }
 
     // Join allele calls across samples
     CHEWBBACA_JOINPROFILES(

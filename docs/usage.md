@@ -90,6 +90,10 @@ SampleC /path/to/sampleC/alleles_results.tsv
 SampleD /path/to/sampleD/alleles_results.tsv
 ```
 
+### `--hashed` [ default = null ]
+
+Specifies the use of hashed allele profiles. Please make sure that any pre-computed allele profiles you provide from the command line (`--alleles`) are also hashed, else the clustering will not work correctly. 
+
 ### `--nomenclature` [ default = null]
 
 A nomenclature for your clusters and singletons to carry over between analyses. This option is useful if you want the clusters to follow some specific naming pattern instead of the build-in schema (cluster_1, singleton_1).

@@ -18,7 +18,7 @@ process CHEWBBACA_ALLELECALL {
     output:
     tuple val(meta), path(results)                          , emit: report
     tuple val(meta), path("*results_alleles.tsv")           , emit: profile
-    tuple val(meta), path("${results}/results_alleles_hashed.tsv") , emit: hashed_profile, optional: true
+    tuple val(meta), path("*results_alleles_hashed.tsv") , emit: hashed_profile, optional: true
     tuple val(meta), path("${results}/results_statistics.tsv"), emit: stats
     tuple val(meta), path("${results}/logging_info.txt")    , emit: logs
     path('versions.yml')                                    , emit: versions
@@ -40,6 +40,9 @@ process CHEWBBACA_ALLELECALL {
     --cpu ${task.cpus}
 
     cp ${results}/results_alleles.tsv ${prefix}_results_alleles.tsv
+    if [ -f ${results}/results_alleles_hashed.tsv ]; then
+        cp ${results}/results_alleles_hashed.tsv ${prefix}_results_alleles_hashed.tsv
+    fi
 
     cat <<-END_VERSIONS > versions.yml
     "${task.process}":
