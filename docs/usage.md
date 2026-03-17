@@ -144,9 +144,6 @@ sample_0006	C	B2	clinical	23/09/2021	217	not_real_data_test_only
 sample_0007	A	A3	clinical	18/09/2021	388	not_real_data_test_only
 sample_0008	B	B3	clinical	12/09/2021	217	not_real_data_test_only
 ```
-### `--parallel_calling` [ default = false ]
-
-BELLA will run Chewbbaca in bulk mode by default (i.e. all assemblies are analysed in the same process). This saves startup time and is recommended for smaller data sets (< 100 samples). If you are analyzing very large data sets, it can instead be preferrable to compute allele profiles per assembly in parallel to make full use of larger compute infrastructures. For that, use this option. This has the added advantage of allowing you to add additional assemblies later without the need to recompute all the allele profiles. 
 
 ### `--species` [ default = null]
 
@@ -172,6 +169,10 @@ A path to a chewbbaca 3.3.x compatible cg/wgMLST schema (i.e. the folder holding
 ### `--efsa` [ default = false]
 
 Use a modified version of a pre-configured schema following [EFSA](https://www.efsa.europa.eu/en) recommendations. This is only available for select species. 
+
+### `--unlock` [ default = false]
+
+The database providing the cgMLST schema can only ever be accessed by a single process to prevent two competing processes from accidently corrupting it. For that reason, Bella will put a lock on the directory when an assembly is typed - and automatically remove that lock when the process as completed. However, if the process fails, or another pipeline run attempts to accesses the same database, the lock will automatically crash the pipeline. If you are sure that the lock can be removed (i.e. the pipeline crashed, the reason was resolved and no other users are running Bella on the same system), start the pipeline with the `--unlock` option. 
 
 ## Expert options
 

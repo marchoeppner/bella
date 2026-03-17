@@ -28,6 +28,7 @@ workflow BELLA {
     samplesheet         = params.input ? channel.fromPath(params.input, checkIfExists:true ).collect() : channel.from([])
     existing_profiles   = params.alleles ? channel.fromPath(params.alleles, checkIfExists: true). collect() : channel.from([])
 
+    schema_dir          = null
     /*
     Get the corect schema to use - either from a pre-configured species or as user-provided path
     */
@@ -37,12 +38,15 @@ workflow BELLA {
             if (params.efsa) {
                 if (params.references[params.species].efsa) {
                     ch_chewie_schema = channel.fromPath(params.references[params.species].efsa)
+                    schema_dir = params.references[params.species].efsa
                 } else {
                     log.warn "No EFSA schema defined for ${params.species} - falling back to default schema."
                     ch_chewie_schema = channel.fromPath(params.references[params.species].db)
+                    schema_dir = params.references[params.species].db
                 }
             } else {
                 ch_chewie_schema = channel.fromPath(params.references[params.species].db)
+                schema_dir = params.references[params.species].db
             }
         } else {
             log.warn "Could not find a pre-configured schema for ${params.species}\nValid schemas are: ${params.references.keySet().join(' ')}\nExiting!"
@@ -50,6 +54,7 @@ workflow BELLA {
         }
     } else {
         ch_chewie_schema = params.schema ? channel.fromPath(params.schema, checkIfExists: true).collect() : channel.from([])
+        schema_dir = params.schema
     }
     
     if (params.distance) {
@@ -65,6 +70,15 @@ workflow BELLA {
 
     pipeline_info = channel.fromPath(dumpParametersToJSON(params.outdir)).collect()
 
+    /* Remove lock on database directory if requested
+    */
+    if (params.unlock) {
+        lockfile = file("${schema_dir.toString()}/bella.lock")
+        if (lockfile.exists()) {
+            log.info "Removing lock on ${schema_dir.toString()}"
+            lockfile.delete()
+        }
+    }
     /*
     Check that the samplesheet is valid and create channels
     */

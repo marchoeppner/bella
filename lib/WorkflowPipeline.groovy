@@ -33,6 +33,7 @@ class WorkflowPipeline {
                 log.info "Must provide a clustering distance to use as default (int)."
                 System.exit(1)
             }
+            
         }
        
     }
