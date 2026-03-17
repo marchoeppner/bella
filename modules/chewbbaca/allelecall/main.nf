@@ -30,6 +30,7 @@ process CHEWBBACA_ALLELECALL {
     results = "results_${prefix}_${db_name}"
 
     """
+
     chewBBACA.py AlleleCall \\
     -i assemblies \\
     -g $db \\

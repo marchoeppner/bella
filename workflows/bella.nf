@@ -137,7 +137,8 @@ workflow BELLA {
 
     // Summarize results as JSON
     SUMMARY(
-        ch_summary_input
+        ch_summary_input,
+        pipeline_info
     )
     ch_versions = ch_versions.mix(SUMMARY.out.versions)
 
