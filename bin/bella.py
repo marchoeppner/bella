@@ -64,7 +64,26 @@ def main(json_file, template, output, version, call, wd, distance, cutoff):
 
     summary = {}
 
-    # Chewbbaca stats - used to seed the sample dictionary (nothing dissapears here)
+    # Seed the summary table with a list of all the samples
+    # Not all samples have Chewbbaca stats, i.e. if they were provided as
+    # pre-computed alleles
+    for sample in jdata["distance"]["x"]:
+        summary[sample] = {
+            "classified_cds": None,
+            "invalid_cds": None,
+            "total_cds": None,
+            "perc_classified": None,
+            "reportree": {
+                "cluster": "NA",
+                "distance": "NA",
+                "color": "#ff3300"
+            },
+            "called": "NA",
+            "missing": "NA",
+            "pct_called": "NA",
+            "status": status["missing"]
+        }
+
     # Chewbbaca allele calling stats
     for cstats in jdata["chewbbaca_stats"]:
         sample = cstats["FILE"]
@@ -77,11 +96,7 @@ def main(json_file, template, output, version, call, wd, distance, cutoff):
                 "cluster": "NA",
                 "distance": "NA",
                 "color": "#ff3300"
-            },
-            "called": "NA",
-            "missing": "NA",
-            "pct_called": "NA",
-            "status": status["missing"]
+            }
         }
 
     # ReporTree Cluster information
@@ -126,6 +141,8 @@ def main(json_file, template, output, version, call, wd, distance, cutoff):
         data["sample_color"] = sample_color
         data["cluster_color"] = cluster_color
         data["cluster_samples"] = cluster_samples
+    else:
+        print("No data for the requested distance in this file!")
 
     # subsetting distance matrix per cluster
     distances = jdata["distance"]["data"]

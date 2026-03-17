@@ -78,7 +78,17 @@ sampleB /path/to/sampleB.fasta
 
 Assemblies should come from an assembly workflow with proper quality control - such as [GABI](https://github.com/bio-raum/gabi) or [AQUAMIS](https://gitlab.com/bfr_bioinformatics/AQUAMIS).
 
-You have to provide all assemblies you want to analyse, every time you run the workflow. There is currently no way to do this incrementally; although the pipeline will re-use previously computed allele profiles if you run with the `--parallel_calling` (see below).
+### `--profiles` [ default = null ]
+
+Bella can combine newly computed allele profiles (`--input`) with previously computed profiles; this can save time when analysing larger dataset where re-computing all the profiles from scratch becomes a computational bottleneck. 
+
+Existing profiles have to come from the same cgMLST database that was used for the current run and requires a TSV format to specify sample names and location of the profiles:
+
+```TSV
+sample  profile
+SampleC /path/to/sampleC/alleles_results.tsv
+SampleD /path/to/sampleD/alleles_results.tsv
+```
 
 ### `--nomenclature` [ default = null]
 

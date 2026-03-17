@@ -2,11 +2,12 @@ include { CHEWBBACA_ALLELECALL }    from './../../modules/chewbbaca/allelecall'
 include { CHEWBBACA_JOINPROFILES }  from './../../modules/chewbbaca/joinprofiles'
 include { CHEWBBACA_EXTRACTCGMLST } from './../../modules/chewbbaca/extractcgmlst'
 
-workflow CHEWBBACA_PARALLEL {
+workflow CHEWBBACA_ALLELECALLING {
 
     take:
-    assemblies
-    chewie_db
+    assemblies      // assemblies in fasta format
+    pre_computed    // cgMLST profiles from the same schema
+    chewie_db       // the cgMLST database
 
     main:
 
@@ -17,11 +18,13 @@ workflow CHEWBBACA_PARALLEL {
         assemblies,
         chewie_db.collect()
     )
-    ch_versions = ch_versions.mix(CHEWBBACA_ALLELECALL.out.versions)
+    ch_versions = ch_versions.mix(CHEWBBACA_ALLELECALL.out.versions)    
 
-    // Join allele calles across samples
+    ch_profiles = CHEWBBACA_ALLELECALL.out.profile.mix(pre_computed)
+
+    // Join allele calls across samples
     CHEWBBACA_JOINPROFILES(
-        CHEWBBACA_ALLELECALL.out.profile.map { m,r ->
+        ch_profiles.map { m,r ->
             [
                 [ sample_id: params.run_name ],
                 r

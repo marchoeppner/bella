@@ -1,5 +1,6 @@
 // Modules
 include { INPUT_CHECK }                     from './../modules/input_check'
+include { INPUT_CHECK as INPUT_CHECK_PROFILES } from './../modules/input_check'
 include { CHEWBBACA_ALLELECALL }            from './../modules/chewbbaca/allelecall'
 include { REPORTREE }                       from './../modules/reportree'
 include { CHEWBBACA_JOINPROFILES }          from './../modules/chewbbaca/joinprofiles'
@@ -12,9 +13,7 @@ include { REPORT }                          from './../modules/helper/report'
 /*
 Include sub workflows
 */
-include { CHEWBBACA_PARALLEL }              from './../subworkflows/chewbbaca_parallel'
-include { CHEWBBACA_SERIAL }                from './../subworkflows/chewbbaca_serial'
-
+include { CHEWBBACA_ALLELECALLING }         from './../subworkflows/chewbbaca_allelecalling'
 
 workflow BELLA {
 
@@ -24,8 +23,10 @@ workflow BELLA {
     ch_multiqc_config   = params.multiqc_config   ? channel.fromPath(params.multiqc_config, checkIfExists: true).collect() : channel.value([])
     ch_multiqc_logo     = params.multiqc_logo     ? channel.fromPath(params.multiqc_logo, checkIfExists: true).collect() : channel.value([])
     ch_bella_template   = params.template         ? channel.fromPath(params.template, checkIfExists: true).collect() : channel.value([])
+    ch_previous_profiles = Channel.from([])
 
     samplesheet         = params.input ? channel.fromPath(params.input, checkIfExists:true ).collect() : channel.from([])
+    existing_profiles   = params.profiles ? channel.fromPath(params.profiles, checkIfExists: true). collect() : channel.from([])
 
     /*
     Get the corect schema to use - either from a pre-configured species or as user-provided path
@@ -64,36 +65,24 @@ workflow BELLA {
     pipeline_info = channel.fromPath(dumpParametersToJSON(params.outdir)).collect()
 
     /*
-    Check that the samplesheet is valid
+    Check that the samplesheet is valid and create channels
     */
     INPUT_CHECK(samplesheet)
+    INPUT_CHECK_PROFILES(existing_profiles)
 
-    if (params.parallel_calling) {
+    ch_previous_profiles = ch_previous_profiles.mix(INPUT_CHECK_PROFILES.out.profiles)
 
-        /*
-        Run chewbbaca allele calling in parallel on each assembly and then merge
-        This option is useful on very large data sets on a distributed compute infrastructure
-        */
-        CHEWBBACA_PARALLEL(
-            INPUT_CHECK.out.assembly,
-            ch_chewie_schema.collect()
-        )
-        ch_matrix = CHEWBBACA_PARALLEL.out.matrix
-        ch_chewie_stats = CHEWBBACA_PARALLEL.out.stats.mix(CHEWBBACA_PARALLEL.out.logs)
-        ch_versions = ch_versions.mix(CHEWBBACA_PARALLEL.out.versions)
-    } else {
-        /*
-        Combine all assemblies and perform joint allele calling
-        This option is preferrable on smaller data sets
-        */
-        CHEWBBACA_SERIAL(
-            INPUT_CHECK.out.assembly,
-            ch_chewie_schema.collect()
-        )
-        ch_matrix = CHEWBBACA_SERIAL.out.matrix
-        ch_chewie_stats = CHEWBBACA_SERIAL.out.stats.mix(CHEWBBACA_SERIAL.out.logs)
-        ch_versions = ch_versions.mix(CHEWBBACA_SERIAL.out.versions)
-    }
+    /*
+    Run allele calling on all new assemblies and merge with pre-existing profiles
+    */
+    CHEWBBACA_ALLELECALLING(
+        INPUT_CHECK.out.assembly,
+        ch_previous_profiles,
+        ch_chewie_schema.collect(),
+    )
+    ch_matrix = CHEWBBACA_ALLELECALLING.out.matrix
+    ch_chewie_stats = CHEWBBACA_ALLELECALLING.out.stats.mix(CHEWBBACA_ALLELECALLING.out.logs)
+    ch_versions = ch_versions.mix(CHEWBBACA_ALLELECALLING.out.versions)
     
     /*
     Use the matrix from chewbbaca to perform clustering 

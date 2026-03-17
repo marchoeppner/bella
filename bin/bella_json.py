@@ -83,25 +83,20 @@ def parse_partitions(lines):
 
     data = {}
     header = lines.pop(0).strip().split("\t")
-    entry = header[1]
 
-    # can be either single-1x1.0 or MST-1x1.0
-    stub = "single" if "single" in entry else "MST"
+    for i, h in enumerate(header[:29]):
+        # Skip the first column since this is just the sample name
+        if i == 0:
+            continue
+        this_data = {}
+        for line in lines:
+            values = line.split("\t")
+            cluster = values[i]
+            sample = values.pop(0)
+            this_data[sample] = cluster
 
-    # we only store the first 30 partitions
-    for dist in list(range(30)):
-
-        if (f"{stub}-{dist}x1.0") in header:
-
-            partition = header.index(f"{stub}-{dist}x1.0")
-            this_data = {}
-            for line in lines:
-                values = line.split("\t")
-                cluster = values[partition]
-                sample = values.pop(0)
-                this_data[sample] = cluster
-
-            data[dist] = this_data
+        key = h.split("-")[1].split("x")[0]
+        data[key] = this_data
 
     return data
 
