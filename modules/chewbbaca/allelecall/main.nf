@@ -13,7 +13,7 @@ process CHEWBBACA_ALLELECALL {
 
     input:
     tuple val(meta), path(assemblies, stageAs: 'assemblies/')
-    path(db)
+    val(db)
 
     output:
     tuple val(meta), path(results)                          , emit: report

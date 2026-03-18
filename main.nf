@@ -31,6 +31,14 @@ workflow {
     // Print summary of supplied parameters
     log.info paramsSummaryLog(workflow)
 
+    log.info """
+    ▗▄▄▖ ▗▄▄▄▖▗▖   ▗▖    ▗▄▖ 
+    ▐▌ ▐▌▐▌   ▐▌   ▐▌   ▐▌ ▐▌
+    ▐▛▀▚▖▐▛▀▀▘▐▌   ▐▌   ▐▛▀▜▌
+    ▐▙▄▞▘▐▙▄▄▖▐▙▄▄▖▐▙▄▄▖▐▌ ▐▌
+    Bacterial Epidemiological Linkage and Analysis
+    """
+
     WorkflowMain.initialise(workflow, params, log)
     WorkflowPipeline.initialise(workflow, params, log)
 

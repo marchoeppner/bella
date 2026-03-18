@@ -8,26 +8,19 @@ workflow INPUT_CHECK {
 
     main:
 
-    ch_profiles = Channel.from([])
-    ch_assemblies = Channel.from([])
-
     samplesheet
         .splitCsv(header:true, sep:'\t')
         .map { row -> assembly_channel(row) }
         .set { assembly_out }
-
-    ch_assemblies = ch_assemblies.mix(assembly_out)
 
     samplesheet
         .splitCsv(header:true, sep:'\t')
         .map { row -> profile_channel(row) }
         .set { profiles_out }
 
-    ch_profiles = ch_profiles.mix(profiles_out)
-
     emit:
-    assembly = ch_assemblies // channel: [ val(meta), [ reads ] ]
-    profiles = ch_profiles
+    assembly = assembly_out // channel: [ val(meta), [ reads ] ]
+    profiles = profiles_out
 }
 
 def profile_channel(LinkedHashMap row) {

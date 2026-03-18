@@ -33,6 +33,12 @@ class WorkflowPipeline {
                 log.info "Must provide a clustering distance to use as default (int)."
                 System.exit(1)
             }
+            if (params.species) {
+                if (!params.references.keySet().contains(params.species)) {
+                    log.info "Did not provide a valid --species\nAllowed values are ${params.references.keySet().join(', ')}\nExiting!"
+                    System.exit(1)
+                }
+            }
             
         }
        
