@@ -5,6 +5,7 @@ include { MULTIQC }                         from './../modules/multiqc'
 include { CUSTOM_DUMPSOFTWAREVERSIONS }     from './../modules/custom/dumpsoftwareversions'
 include { SUMMARY }                         from './../modules/helper/summary'
 include { REPORT }                          from './../modules/helper/report'
+include { HELPER_EXTRACT_ALLELES }          from './../modules/helper/extract_alleles'
 include { CHEWBBACA_ALLELECALL }            from './../modules/chewbbaca/allelecall'
 include { CHEWBBACA_JOINPROFILES }          from './../modules/chewbbaca/joinprofiles'
 include { CHEWBBACA_EXTRACTCGMLST }         from './../modules/chewbbaca/extractcgmlst'
@@ -67,20 +68,34 @@ workflow BELLA {
     */
     INPUT_CHECK(samplesheet.mix(existing_profiles))
 
-    ch_assemblies = ch_assemblies.mix(INPUT_CHECK.out.assembly)    
+    ch_assemblies = ch_assemblies.mix(INPUT_CHECK.out.assembly)
     ch_profiles = ch_profiles.mix(INPUT_CHECK.out.profiles)
+    ch_metas = ch_assemblies.map {m, a -> m }
 
     /*
     Run allele calling on all new assemblies and merge with pre-existing profiles
     */
 
-    // Perform allele calling per assembly
+    // Perform allele calling on assemblies
+
+    // Optional: combine all assemblies into one calling job
+    if (params.joint_calling) {
+        ch_assemblies = ch_assemblies.map { m, a -> tuple([sample_id: params.run_name], a)}.groupTuple()
+    }
+
     CHEWBBACA_ALLELECALL(
         ch_assemblies,
         schema_dir
     )
     ch_versions = ch_versions.mix(CHEWBBACA_ALLELECALL.out.versions)    
-
+    
+    if (params.joint_calling) {
+        HELPER_EXTRACT_ALLELES(
+            ch_metas.combine(
+                CHEWBBACA_ALLELECALL.out.profile.mix(CHEWBBACA_ALLELECALL.out.hashed_profile).map { m, p -> p }
+            )
+        )
+    }
     // combine computed profiles with pre-computed profiles - hashed or unhashed
     if (params.hashed) {
         ch_profiles = ch_profiles.mix(CHEWBBACA_ALLELECALL.out.hashed_profile)
@@ -88,24 +103,30 @@ workflow BELLA {
         ch_profiles = ch_profiles.mix(CHEWBBACA_ALLELECALL.out.profile)
     }
 
-    // Evaluate allele calls (jointly)
+    // Evaluate allele calls 
     CHEWBBACA_ALLELECALLEVALUATOR(
         CHEWBBACA_ALLELECALL.out.report,
         schema_dir
     )
     ch_versions = ch_versions.mix(CHEWBBACA_ALLELECALLEVALUATOR.out.versions)
 
-    // Join allele calls across samples
-    CHEWBBACA_JOINPROFILES(
-        ch_profiles.map { m,r ->
-            [[ sample_id: params.run_name ], r]
-        }.groupTuple()
-    )
-    ch_versions = ch_versions.mix(CHEWBBACA_JOINPROFILES.out.versions)
+    // Join profiles, if applicable (i.e. we have pre-computed alleles and/or the assemblies were called individually)
+    if (params.alleles || !params.joint_calling) {
+        // Join allele calls across samples
+        CHEWBBACA_JOINPROFILES(
+            ch_profiles.map { m,r ->
+                [[ sample_id: params.run_name ], r]
+            }.groupTuple()
+        )
+        ch_versions = ch_versions.mix(CHEWBBACA_JOINPROFILES.out.versions)
+        ch_joint_profiles = CHEWBBACA_JOINPROFILES.out.report
+    } else {
+        ch_joint_profiles = ch_profiles
+    }
     
     // Filter matrix for valid positions
     CHEWBBACA_EXTRACTCGMLST(
-        CHEWBBACA_JOINPROFILES.out.report
+        ch_joint_profiles
     )
     ch_versions = ch_versions.mix(CHEWBBACA_EXTRACTCGMLST.out.versions)
 
