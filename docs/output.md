@@ -5,16 +5,11 @@
 <details markdown=1>
 <summary>reports</summary>
 
-Add information here
+BELLA generates the following outputs:
 
-</details>
-
-## Quality control
-
-<details markdown=1>
-<summary>MultiQC</summary>
-
-- MultiQC/`name_of_pipeline_run`_multiqc_report.html: A graphical and interactive report of various QC steps and results
+`chewbbaca` - contains results from the Chewbbaca analysis to percm cgMLST calling
+`reportree` - contains results from the ReporTree clustering analysis
+`report` - contains a graphical report of this analysis with some useful metrics and visualizations in HTML format. 
 
 </details>
 

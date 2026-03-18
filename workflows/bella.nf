@@ -1,100 +1,143 @@
 // Modules
 include { INPUT_CHECK }                     from './../modules/input_check'
-include { CHEWBBACA_ALLELECALL }            from './../modules/chewbbaca/allelecall'
 include { REPORTREE }                       from './../modules/reportree'
-include { CHEWBBACA_JOINPROFILES }          from './../modules/chewbbaca/joinprofiles'
 include { MULTIQC }                         from './../modules/multiqc'
 include { CUSTOM_DUMPSOFTWAREVERSIONS }     from './../modules/custom/dumpsoftwareversions'
-include { CHEWBBACA_ALLELECALLEVALUATOR }   from './../modules/chewbbaca/allelecallevaluator'
 include { SUMMARY }                         from './../modules/helper/summary'
 include { REPORT }                          from './../modules/helper/report'
+include { HELPER_EXTRACT_ALLELES }          from './../modules/helper/extract_alleles'
+include { CHEWBBACA_ALLELECALL }            from './../modules/chewbbaca/allelecall'
+include { CHEWBBACA_JOINPROFILES }          from './../modules/chewbbaca/joinprofiles'
+include { CHEWBBACA_EXTRACTCGMLST }         from './../modules/chewbbaca/extractcgmlst'
+include { CHEWBBACA_ALLELECALLEVALUATOR  }  from './../modules/chewbbaca/allelecallevaluator'
 
 /*
 Include sub workflows
 */
-include { CHEWBBACA_PARALLEL }              from './../subworkflows/chewbbaca_parallel'
-include { CHEWBBACA_SERIAL }                from './../subworkflows/chewbbaca_serial'
-
+// include { CHEWBBACA_ALLELECALLING }         from './../subworkflows/chewbbaca_allelecalling'
 
 workflow BELLA {
 
     main:
 
-    // Subworkflows
     ch_multiqc_config   = params.multiqc_config   ? channel.fromPath(params.multiqc_config, checkIfExists: true).collect() : channel.value([])
     ch_multiqc_logo     = params.multiqc_logo     ? channel.fromPath(params.multiqc_logo, checkIfExists: true).collect() : channel.value([])
     ch_bella_template   = params.template         ? channel.fromPath(params.template, checkIfExists: true).collect() : channel.value([])
-
-    samplesheet         = params.input ? channel.fromPath(params.input, checkIfExists:true ).collect() : channel.from([])
-
+    ch_profiles         = Channel.from([])
+    ch_assemblies       = Channel.from([])
+    
+    samplesheet         = params.input      ? channel.fromPath(params.input, checkIfExists:true ).collect()     : channel.from([])
+    existing_profiles   = params.alleles    ? channel.fromPath(params.alleles, checkIfExists: true). collect()  : channel.from([])
+    
     /*
     Get the corect schema to use - either from a pre-configured species or as user-provided path
+    We use this as a value since the the locking/unlocking modifies the folder
     */
-    if (params.species) {
-        if (params.references.keySet().contains(params.species)) {
-            ch_distance = params.references[params.species].distance
-            if (params.efsa) {
-                if (params.references[params.species].efsa) {
-                    ch_chewie_schema = channel.fromPath(params.references[params.species].efsa)
-                } else {
-                    log.warn "No EFSA schema defined for ${params.species} - falling back to default schema."
-                    ch_chewie_schema = channel.fromPath(params.references[params.species].db)
-                }
-            } else {
-                ch_chewie_schema = channel.fromPath(params.references[params.species].db)
-            }
-        } else {
-            log.warn "Could not find a pre-configured schema for ${params.species}\nValid schemas are: ${params.references.keySet().join(' ')}\nExiting!"
-            System.exit(1)
-        }
+    schema_dir          = get_schema_dir(params)
+    if (!schema_dir) {
+        log.info "No schema defined - exiting!"
+        System.exit(1)
     } else {
-        ch_chewie_schema = params.schema ? channel.fromPath(params.schema, checkIfExists: true).collect() : channel.from([])
-    }
-    
-    if (params.distance) {
-        ch_distance = params.distance
+        schema_file = file(schema_dir, checkIfExists: true)
     }
     
     ch_nomenclature     = params.nomenclature ? file(params.nomenclature, checkIfExists: true) : channel.from(false)
     ch_metadata         = params.metadata ? file(params.metadata, checkIfExists: true) : channel.from(false)
 
-    ch_versions = channel.from([])
-    multiqc_files = channel.from([])
+    ch_versions     = channel.from([])
+    multiqc_files   = channel.from([])
+
+    // Dummy value for stats 
+    ch_chewie_stats = channel.from([ [[sample_id: params.run_name],file("${baseDir}/assets/email_template.txt")] ])
 
     pipeline_info = channel.fromPath(dumpParametersToJSON(params.outdir)).collect()
 
-    /*
-    Check that the samplesheet is valid
+    /* Remove lock on database directory if requested
     */
-    INPUT_CHECK(samplesheet)
+    if (params.unlock) {
+        lockfile = file("${schema_dir.toString()}/bella.lock")
+        if (lockfile.exists()) {
+            log.info "Removing lock on ${schema_dir.toString()}"
+            lockfile.delete()
+        } else {
+            log.info "No lock file found, ignoring --unlock option."
+        }
+    }
+    /*
+    Check that the samplesheet is valid and create channels
+    */
+    INPUT_CHECK(samplesheet.mix(existing_profiles))
 
-    if (params.parallel_calling) {
+    ch_assemblies = ch_assemblies.mix(INPUT_CHECK.out.assembly)
+    ch_profiles = ch_profiles.mix(INPUT_CHECK.out.profiles)
+    ch_metas = ch_assemblies.map {m, a -> m }
 
-        /*
-        Run chewbbaca allele calling in parallel on each assembly and then merge
-        This option is useful on very large data sets on a distributed compute infrastructure
-        */
-        CHEWBBACA_PARALLEL(
-            INPUT_CHECK.out.assembly,
-            ch_chewie_schema.collect()
+    /*
+    Run allele calling on all new assemblies and merge with pre-existing profiles
+    */
+
+    // Perform allele calling on assemblies
+
+    // Optional: combine all assemblies into one calling job
+    if (params.joint_calling) {
+        ch_assemblies = ch_assemblies.map { m, a -> tuple([sample_id: params.run_name], a)}.groupTuple()
+    }
+
+    CHEWBBACA_ALLELECALL(
+        ch_assemblies,
+        schema_dir
+    )
+    ch_versions = ch_versions.mix(CHEWBBACA_ALLELECALL.out.versions)    
+    
+    if (params.joint_calling) {
+        HELPER_EXTRACT_ALLELES(
+            ch_metas.combine(
+                CHEWBBACA_ALLELECALL.out.profile.mix(CHEWBBACA_ALLELECALL.out.hashed_profile).map { m, p -> p }
+            )
         )
-        ch_matrix = CHEWBBACA_PARALLEL.out.matrix
-        ch_chewie_stats = CHEWBBACA_PARALLEL.out.stats.mix(CHEWBBACA_PARALLEL.out.logs)
-        ch_versions = ch_versions.mix(CHEWBBACA_PARALLEL.out.versions)
+    }
+    // combine computed profiles with pre-computed profiles - hashed or unhashed
+    if (params.hashed) {
+        ch_profiles = ch_profiles.mix(CHEWBBACA_ALLELECALL.out.hashed_profile)
     } else {
-        /*
-        Combine all assemblies and perform joint allele calling
-        This option is preferrable on smaller data sets
-        */
-        CHEWBBACA_SERIAL(
-            INPUT_CHECK.out.assembly,
-            ch_chewie_schema.collect()
+        ch_profiles = ch_profiles.mix(CHEWBBACA_ALLELECALL.out.profile)
+    }
+
+    // Evaluate allele calls 
+    CHEWBBACA_ALLELECALLEVALUATOR(
+        CHEWBBACA_ALLELECALL.out.report,
+        schema_dir
+    )
+    ch_versions = ch_versions.mix(CHEWBBACA_ALLELECALLEVALUATOR.out.versions)
+
+    // Join profiles, if applicable (i.e. we have pre-computed alleles and/or the assemblies were called individually)
+    if (params.alleles || !params.joint_calling) {
+        // Join allele calls across samples
+        CHEWBBACA_JOINPROFILES(
+            ch_profiles.map { m,r ->
+                [[ sample_id: params.run_name ], r]
+            }.groupTuple()
         )
-        ch_matrix = CHEWBBACA_SERIAL.out.matrix
-        ch_chewie_stats = CHEWBBACA_SERIAL.out.stats.mix(CHEWBBACA_SERIAL.out.logs)
-        ch_versions = ch_versions.mix(CHEWBBACA_SERIAL.out.versions)
+        ch_versions = ch_versions.mix(CHEWBBACA_JOINPROFILES.out.versions)
+        ch_joint_profiles = CHEWBBACA_JOINPROFILES.out.report
+    } else {
+        ch_joint_profiles = ch_profiles
     }
     
+    // Filter matrix for valid positions
+    CHEWBBACA_EXTRACTCGMLST(
+        ch_joint_profiles
+    )
+    ch_versions = ch_versions.mix(CHEWBBACA_EXTRACTCGMLST.out.versions)
+
+    ch_matrix       = CHEWBBACA_EXTRACTCGMLST.out.report
+    ch_chewie_stats = ch_chewie_stats.mix(CHEWBBACA_ALLELECALL.out.stats)
+    ch_chewie_stats = ch_chewie_stats.mix(CHEWBBACA_ALLELECALL.out.logs)
+    
+    ch_chewie_stats.map { m ,s ->
+        tuple([sample_id: params.run_name], s)
+    }.set { ch_grouped_stats }
+
     /*
     Use the matrix from chewbbaca to perform clustering 
     */
@@ -113,39 +156,25 @@ workflow BELLA {
     multiqc_files = multiqc_files.mix(CUSTOM_DUMPSOFTWAREVERSIONS.out.mqc_yml)
 
     REPORTREE.out.results.join(
-        ch_chewie_schema.map { s ->
-            [
-                [ sample_id: params.run_name],
-                s
-            ]
-        }
-    ).join(
         CUSTOM_DUMPSOFTWAREVERSIONS.out.yml.map { y ->
-            [
-                [ sample_id: params.run_name],
-                y
-            ]
+            tuple([sample_id: params.run_name], y)
         }
     ).join(
-      ch_chewie_stats.map { m,s ->
-        [
-            [ sample_id: params.run_name],
-            s
-        ]
-      }.groupTuple()
+       ch_grouped_stats.groupTuple()
     ).set { ch_summary_input }
-
+    
     // Summarize results as JSON
     SUMMARY(
-        ch_summary_input
+        ch_summary_input,
+        schema_dir,
+        pipeline_info
     )
     ch_versions = ch_versions.mix(SUMMARY.out.versions)
 
     // Generate HTML report
     REPORT(
         SUMMARY.out.json,
-        ch_bella_template,
-        ch_distance
+        ch_bella_template
     )
     ch_versions = ch_versions.mix(REPORT.out.versions)
 
@@ -159,15 +188,6 @@ workflow BELLA {
     qc = MULTIQC.out.report
 }
 
-def combine_partitions(partitions,dist) {
-    def parts = partitions.tokenize(",")
-    if (!parts.contains(dist)) {
-        parts.add(dist)
-    }
-
-    return parts.join(",")
-}
-
 // turn the summaryMap to a JSON file
 def dumpParametersToJSON(outdir) {
     def timestamp = new java.util.Date().format('yyyy-MM-dd_HH-mm-ss')
@@ -179,4 +199,27 @@ def dumpParametersToJSON(outdir) {
     nextflow.extension.FilesEx.copyTo(temp_pf.toPath(), "${outdir}/pipeline_info/params_${timestamp}.json")
     temp_pf.delete()
     return file("${outdir}/pipeline_info/params_${timestamp}.json")
+}
+
+def get_schema_dir(params) {
+
+    def schema_dir = null
+
+    // Validation happens in lib/WorkflowPipeline
+    if (params.species) {
+        if (params.efsa) {
+            if (params.references[params.species].efsa) {
+                schema_dir = params.references[params.species].efsa
+            } else {
+                log.warn "No EFSA schema defined for ${params.species} - falling back to default schema."
+                schema_dir = params.references[params.species].db
+            }
+        } else {
+            schema_dir = params.references[params.species].db
+        }
+    } else if (params.schema) {
+        schema_dir = params.schema
+    }
+
+    return schema_dir
 }

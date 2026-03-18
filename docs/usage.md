@@ -78,7 +78,51 @@ sampleB /path/to/sampleB.fasta
 
 Assemblies should come from an assembly workflow with proper quality control - such as [GABI](https://github.com/bio-raum/gabi) or [AQUAMIS](https://gitlab.com/bfr_bioinformatics/AQUAMIS).
 
-You have to provide all assemblies you want to analyse, every time you run the workflow. There is currently no way to do this incrementally; although the pipeline will re-use previously computed allele profiles if you run with the `--parallel_calling` (see below).
+### `--alleles` [ default = null ]
+
+Bella can combine newly computed allele profiles (`--input`) with previously computed profiles; this can save time when analysing larger dataset where re-computing all the allele profiles from scratch becomes a computational bottleneck. 
+
+Existing profiles have to come from the same cgMLST database that was used for the current run and requires a TSV format to specify sample names and location of the profiles:
+
+```TSV9
+sample  profile
+SampleC /path/to/sampleC/alleles_results.tsv
+SampleD /path/to/sampleD/alleles_results.tsv
+```
+
+### `--efsa` [ default = false]
+
+Use a modified version of a pre-configured schema following [EFSA](https://www.efsa.europa.eu/en) recommendations. This is only available for select species. 
+
+### `--distance` [ default = null ]
+
+A custom clustering distance to use in the graphical report (the full results are available in TSV format for downstream processing). Pre-configured schemas (--species) use a pre-set distance (which you can override with this option).
+
+### `--hashed` [ default = null ]
+
+Specifies the use of hashed allele profiles. Please make sure that any pre-computed allele profiles you provide from the command line (`--alleles`) are also hashed, else the clustering will not work correctly. 
+
+### `--joint_calling` [default = null ]
+
+Perform allele typing for all assemblies simultaneously. This saves significant start-up time, but generates a combined result rather than one result per assembly.
+
+### `--metadata` [default = null]
+
+A metadata file that associates samples with relevant information about e.g. date of sampling, sampling context (e.g. clinical vs food_processing etc). The choice of metadata keys is up to you and they do not have an influence on the analysis as such, but can be used during visualization etc to reveal patterns.
+
+The file must be in TSV format, for example:
+
+```TSV
+sample	country	region	source	date	ST	note
+sample_0001	A	A1	clinical	21/11/2021	na	not_real_data_test_only
+sample_0002	B	B1	clinical	10/11/2021	na	not_real_data_test_only
+sample_0003	C	B1	clinical	24/10/2021	388	not_real_data_test_only
+sample_0004	A	A2	clinical	18/10/2021	77	not_real_data_test_only
+sample_0005	B	B2	clinical	03/10/2021	3	not_real_data_test_only
+sample_0006	C	B2	clinical	23/09/2021	217	not_real_data_test_only
+sample_0007	A	A3	clinical	18/09/2021	388	not_real_data_test_only
+sample_0008	B	B3	clinical	12/09/2021	217	not_real_data_test_only
+```
 
 ### `--nomenclature` [ default = null]
 
@@ -113,26 +157,9 @@ Note that ReporTree will always fall back to the built-in nomenclature system wh
 
 Some more information on how nomenclatures in ReporTree work [here](https://github.com/insapathogenomics/ReporTree/wiki/3.-Nomenclature).
 
-### `--metadata` [defualt = null]
+### `--schema` [ default = null ]
 
-A metadata file that associates samples with relevant information about e.g. date of sampling, sampling context (e.g. clinical vs food_processing etc). The choice of metadata keys is up to you and they do not have an influence on the analysis as such, but can be used during visualization etc to reveal patterns.
-
-The file must be in TSV format, for example:
-
-```TSV
-sample	country	region	source	date	ST	note
-sample_0001	A	A1	clinical	21/11/2021	na	not_real_data_test_only
-sample_0002	B	B1	clinical	10/11/2021	na	not_real_data_test_only
-sample_0003	C	B1	clinical	24/10/2021	388	not_real_data_test_only
-sample_0004	A	A2	clinical	18/10/2021	77	not_real_data_test_only
-sample_0005	B	B2	clinical	03/10/2021	3	not_real_data_test_only
-sample_0006	C	B2	clinical	23/09/2021	217	not_real_data_test_only
-sample_0007	A	A3	clinical	18/09/2021	388	not_real_data_test_only
-sample_0008	B	B3	clinical	12/09/2021	217	not_real_data_test_only
-```
-### `--parallel_calling` [ default = false ]
-
-BELLA will run Chewbbaca in bulk mode by default (i.e. all assemblies are analysed in the same process). This saves startup time and is recommended for smaller data sets (< 100 samples). If you are analyzing very large data sets, it can instead be preferrable to compute allele profiles per assembly in parallel to make full use of larger compute infrastructures. For that, use this option. This has the added advantage of allowing you to add additional assemblies later without the need to recompute all the allele profiles. 
+A path to a chewbbaca 3.3.x compatible cg/wgMLST schema (i.e. the folder holding the allele fasta files). May be used instead of `--species`. Schemas can be downloaded from [chewie-ns](https://chewbbaca.readthedocs.io/en/latest/user/modules/DownloadSchema.html) or may instead be produced from compatible input data using [Chewbbaca PrepExternalSchema](https://chewbbaca.readthedocs.io/en/latest/user/modules/PrepExternalSchema.html).
 
 ### `--species` [ default = null]
 
@@ -147,17 +174,9 @@ A schema for a pre-configured species. Currently supported options are:
 
 Where available, `--species` may optionally be combined with `--efsa`. Mutually exclusive with `--schema`. 
 
-### `--distance` [ default = null ]
+### `--unlock` [ default = false]
 
-A custom clustering distance to use in the graphical report (the full results are available in TSV format for downstream processing). Pre-configured schema (--species) use a pre-set distance (which you can override with this option).
-
-### `--schema` [ default = null ]
-
-A path to a chewbbaca 3.3.x compatible cg/wgMLST schema (i.e. the folder holding the allele fasta files). May be used instead of `--species`. Schemas can be downloaded from [chewie-ns](https://chewbbaca.readthedocs.io/en/latest/user/modules/DownloadSchema.html) or may instead be produced from compatible input data using [Chewbbaca PrepExternalSchema](https://chewbbaca.readthedocs.io/en/latest/user/modules/PrepExternalSchema.html).
-
-### `--efsa` [ default = false]
-
-Use a modified version of a pre-configured schema following [EFSA](https://www.efsa.europa.eu/en) recommendations. This is only available for select species. 
+The database providing the cgMLST schema can only ever be accessed by a single process to prevent two competing processes from accidently corrupting it. For that reason, Bella will put a lock on the directory when an assembly is typed - and automatically remove that lock when the process has completed. However, if the process fails, or another pipeline run attempts to accesses the same database, the lock will automatically crash the pipeline. If you are sure that the lock can be removed (i.e. the pipeline crashed, the reason was resolved and no other users are running Bella on the same system), start the pipeline with the `--unlock` option. 
 
 ## Expert options
 

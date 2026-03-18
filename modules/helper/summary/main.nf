@@ -7,7 +7,9 @@ process SUMMARY {
         'quay.io/biocontainers/multiqc:1.27.1--pyhdfd78af_0' }"
 
     input:
-    tuple val(meta), path(reportree), val(schema), path(yaml), path(stats, stageAs: '?/')
+    tuple val(meta), path(reportree), path(yaml), path(stats, stageAs: '?/')
+    val(schema)
+    path(settings)
 
     output:
     tuple val(meta), path('*.json') , emit: json
@@ -20,6 +22,7 @@ process SUMMARY {
     """
     bella_json.py --schema $schema \\
     --yaml $yaml \\
+    --settings $settings \\
     --output $result
 
     cat <<-END_VERSIONS > versions.yml

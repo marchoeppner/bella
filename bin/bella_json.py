@@ -10,6 +10,7 @@ parser = argparse.ArgumentParser(description="Script options")
 parser.add_argument("--output", "-o")
 parser.add_argument("--yaml", "-y")
 parser.add_argument("--schema", "-s")
+parser.add_argument("--settings", "-x")
 
 args = parser.parse_args()
 
@@ -83,20 +84,19 @@ def parse_partitions(lines):
     data = {}
     header = lines.pop(0).strip().split("\t")
 
-    # we only store the first 30 partitions
-    for dist in list(range(30)):
+    for i, h in enumerate(header[:29]):
+        # Skip the first column since this is just the sample name
+        if i == 0:
+            continue
+        this_data = {}
+        for line in lines:
+            values = line.split("\t")
+            cluster = values[i]
+            sample = values.pop(0)
+            this_data[sample] = cluster
 
-        if (f"MST-{dist}x1.0") in header:
-            partition = header.index(f"MST-{dist}x1.0")
-
-            this_data = {}
-            for line in lines:
-                values = line.split("\t")
-                cluster = values[partition]
-                sample = values.pop(0)
-                this_data[sample] = cluster
-
-            data[dist] = this_data
+        key = h.split("-")[1].split("x")[0]
+        data[key] = this_data
 
     return data
 
@@ -131,7 +131,12 @@ def parse_yaml(lines):
     return data
 
 
-def main(yaml_file, schema, output):
+def main(yaml_file, schema, settings_json, output):
+
+    with open(settings_json, "r") as f:
+        settings_lines = [line.rstrip() for line in f]
+
+    settings = parse_json(settings_lines)
 
     files = [os.path.abspath(f) for f in glob.glob("*.*")]
     files_in_folders = [os.path.abspath(f) for f in glob.glob("*/*")]
@@ -150,7 +155,9 @@ def main(yaml_file, schema, output):
         "date": date,
         "schema": schema, 
         "software": versions,
-        "chewbbaca_stats": []
+        "chewbbaca_stats": [],
+        "analysis_info": {},
+        "settings": settings
     }
 
     for file in files:
@@ -158,13 +165,13 @@ def main(yaml_file, schema, output):
         with open(file, "r") as f:
             lines = [line.rstrip() for line in f]
 
-        if re.search(".dist_hamming.tsv", file):
+        if re.search("dist_hamming.tsv", file):
             matrix["distance"] = parse_matrix(lines)
         elif re.search(".nwk", file):
             matrix["tree"] = "\n".join(lines)
-        elif re.search(".partitions.tsv", file):
+        elif re.search("_partitions.tsv", file):
             matrix["clusters"] = parse_partitions(lines)
-        elif re.search(".loci_report.tsv", file):
+        elif re.search("loci_report.tsv", file):
             matrix["loci_report"] = parse_tabular(lines)
         elif re.search("logging_info.txt", file):
             matrix["analysis_info"] = parse_log(lines)
@@ -177,4 +184,4 @@ def main(yaml_file, schema, output):
 
 
 if __name__ == '__main__':
-    main(args.yaml, args.schema, args.output)
+    main(args.yaml, args.schema, args.settings, args.output)

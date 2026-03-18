@@ -1,6 +1,6 @@
-process REPORT {
+process HELPER_EXTRACT_ALLELES {
 
-    tag "All"
+    tag "${meta.sample_id}"
 
     conda "${moduleDir}/environment.yml"
     container "${ workflow.containerEngine == 'singularity' && !task.ext.singularity_pull_docker_container ?
@@ -8,28 +8,22 @@ process REPORT {
         'quay.io/biocontainers/dajin2:0.5.5--pyhdfd78af_0' }"
 
     input:
-    tuple val(meta), path(json)
-    path(template)
+    tuple val(meta), path(tsv_file, stageAs: "report/")
 
     output:
-    path('*.html')          , emit: html
-    path 'versions.yml'     , emit: versions
+    tuple val(meta), path('*.tsv')  , emit: tsv
+    path 'versions.yml'             , emit: versions
 
     script:
     def args = task.ext.args ?: ''
-    def prefix = task.ext.prefix ?: params.run_name
-    def result = prefix + '.html'
-
-    def version = workflow.manifest.version
-    def call = workflow.commandLine
-    def wd = workflow.workDir
+    def prefix = task.ext.prefix ?: meta.sample_id
+    def suffix = tsv_file.toString().contains("_hashed.tsv") ? "_results_alleles_hashed.tsv" : "_results_alleles.tsv"
+    def result = prefix + suffix
 
     """
-    bella.py --template $template \
-    --input $json \
-    --version $version \
-    --call '$call' \
-    --wd $wd \
+    bella_extract_alleles.py \
+    --sample $meta.sample_id \
+    --tsv $tsv_file \
     $args \
     --output $result
 

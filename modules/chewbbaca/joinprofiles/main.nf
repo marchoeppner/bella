@@ -9,7 +9,7 @@ process CHEWBBACA_JOINPROFILES {
         'quay.io/biocontainers/chewbbaca:3.3.10--pyhdfd78af_0' }"
 
     input:
-    tuple val(meta), path(reports, stageAs: 'reports/?')
+    tuple val(meta), path(reports, stageAs: '?/')
 
     output:
     tuple val(meta), path(results)              , emit: report
