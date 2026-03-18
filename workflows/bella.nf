@@ -52,17 +52,22 @@ workflow BELLA {
 
     pipeline_info = channel.fromPath(dumpParametersToJSON(params.outdir)).collect()
 
-    /* Remove lock on database directory if requested
+    /* Check if schema directory is locked
+    and unlock if requested
     */
-    if (params.unlock) {
-        lockfile = file("${schema_dir.toString()}/bella.lock")
-        if (lockfile.exists()) {
-            log.info "Removing lock on ${schema_dir.toString()}"
+    lockfile = file("${schema_dir.toString()}/bella.lock")
+    if (lockfile.exists()) {
+        log.info "Schema directory appears locked."
+        if (params.unlock) {
+            log.info "Unlocking!"
             lockfile.delete()
         } else {
-            log.info "No lock file found, ignoring --unlock option."
+            log.info "Cannot run pipeline while schema is locked!\n"
+            log.info "If you are sure that it is safe to do so, please use --unlock"
+            System.exit(1)
         }
     }
+
     /*
     Check that the samplesheet is valid and create channels
     */
@@ -89,6 +94,7 @@ workflow BELLA {
     )
     ch_versions = ch_versions.mix(CHEWBBACA_ALLELECALL.out.versions)    
     
+    // Extract individual allele profiles if joint calling was performed
     if (params.joint_calling) {
         HELPER_EXTRACT_ALLELES(
             ch_metas.combine(
