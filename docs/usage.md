@@ -102,10 +102,6 @@ A custom clustering distance to use in the graphical report (the full results ar
 
 Specifies the use of hashed allele profiles. Please make sure that any pre-computed allele profiles you provide from the command line (`--alleles`) are also hashed, else the clustering will not work correctly. 
 
-### `--joint_calling` [default = null ]
-
-Perform allele typing for all assemblies simultaneously. This saves significant start-up time, but generates a combined result rather than one result per assembly.
-
 ### `--metadata` [default = null]
 
 A metadata file that associates samples with relevant information about e.g. date of sampling, sampling context (e.g. clinical vs food_processing etc). The choice of metadata keys is up to you and they do not have an influence on the analysis as such, but can be used during visualization etc to reveal patterns.

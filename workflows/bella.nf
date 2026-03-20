@@ -83,10 +83,8 @@ workflow BELLA {
 
     // Perform allele calling on assemblies
 
-    // Optional: combine all assemblies into one calling job
-    if (params.joint_calling) {
-        ch_assemblies = ch_assemblies.map { m, a -> tuple([sample_id: params.run_name], a)}.groupTuple()
-    }
+    // Combine all assemblies into one calling job
+    ch_assemblies = ch_assemblies.map { m, a -> tuple([sample_id: params.run_name], a)}.groupTuple()
 
     CHEWBBACA_ALLELECALL(
         ch_assemblies,
@@ -95,13 +93,11 @@ workflow BELLA {
     ch_versions = ch_versions.mix(CHEWBBACA_ALLELECALL.out.versions)    
     
     // Extract individual allele profiles if joint calling was performed
-    if (params.joint_calling) {
-        HELPER_EXTRACT_ALLELES(
-            ch_metas.combine(
-                CHEWBBACA_ALLELECALL.out.profile.mix(CHEWBBACA_ALLELECALL.out.hashed_profile).map { m, p -> p }
-            )
+    HELPER_EXTRACT_ALLELES(
+        ch_metas.combine(
+            CHEWBBACA_ALLELECALL.out.profile.mix(CHEWBBACA_ALLELECALL.out.hashed_profile).map { m, p -> p }
         )
-    }
+    )
     // combine computed profiles with pre-computed profiles - hashed or unhashed
     if (params.hashed) {
         ch_profiles = ch_profiles.mix(CHEWBBACA_ALLELECALL.out.hashed_profile)
@@ -117,7 +113,7 @@ workflow BELLA {
     ch_versions = ch_versions.mix(CHEWBBACA_ALLELECALLEVALUATOR.out.versions)
 
     // Join profiles, if applicable (i.e. we have pre-computed alleles and/or the assemblies were called individually)
-    if (params.alleles || !params.joint_calling) {
+    if (params.alleles) {
         // Join allele calls across samples
         CHEWBBACA_JOINPROFILES(
             ch_profiles.map { m,r ->
