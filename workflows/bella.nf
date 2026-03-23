@@ -14,7 +14,6 @@ include { CHEWBBACA_ALLELECALLEVALUATOR  }  from './../modules/chewbbaca/allelec
 /*
 Include sub workflows
 */
-// include { CHEWBBACA_ALLELECALLING }         from './../subworkflows/chewbbaca_allelecalling'
 
 workflow BELLA {
 
@@ -23,8 +22,8 @@ workflow BELLA {
     ch_multiqc_config   = params.multiqc_config   ? channel.fromPath(params.multiqc_config, checkIfExists: true).collect() : channel.value([])
     ch_multiqc_logo     = params.multiqc_logo     ? channel.fromPath(params.multiqc_logo, checkIfExists: true).collect() : channel.value([])
     ch_bella_template   = params.template         ? channel.fromPath(params.template, checkIfExists: true).collect() : channel.value([])
-    ch_profiles         = Channel.from([])
-    ch_assemblies       = Channel.from([])
+    ch_profiles         = channel.from([])
+    ch_assemblies       = channel.from([])
     
     samplesheet         = params.input      ? channel.fromPath(params.input, checkIfExists:true ).collect()     : channel.from([])
     existing_profiles   = params.alleles    ? channel.fromPath(params.alleles, checkIfExists: true). collect()  : channel.from([])
