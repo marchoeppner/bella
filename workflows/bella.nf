@@ -30,7 +30,8 @@ workflow BELLA {
     
     /*
     Get the corect schema to use - either from a pre-configured species or as user-provided path
-    We use this as a value since the the locking/unlocking modifies the folder
+    We use this as a value, not file, since the the locking/unlocking modifies the folder and would
+    prevent resuming without rerunning allele calling again. 
     */
     schema_dir          = get_schema_dir(params)
     if (!schema_dir) {
@@ -76,6 +77,24 @@ workflow BELLA {
     ch_profiles = ch_profiles.mix(INPUT_CHECK.out.profiles)
     ch_metas = ch_assemblies.map {m, a -> m }
 
+    // Check that the pre-computed profiles are hashed or unhashed
+    // as specified
+    ch_profiles.branch { m, profile ->
+        def hashed = profile_is_hashed(profile)
+        is_hashed: hashed == true
+        is_unhashed: hashed == false
+    }.set { ch_profiles_by_hashed }
+
+    if (params.hashed) {
+        ch_profiles_by_hashed.is_unhashed.subscribe { m, pro ->
+            log.warn "Requested hashed profile processing, but ${m.sample_id} appears to contain unhashed alleles!"
+        }
+    } else {
+        ch_profiles_by_hashed.is_hashed.subscribe { m, pro ->
+            log.warn "Requested unhashed profile processing, but ${m.sample_id} appears to contain hashed alleles!"
+        }
+    }
+
     /*
     Run allele calling on all new assemblies and merge with pre-existing profiles
     */
@@ -91,7 +110,7 @@ workflow BELLA {
     )
     ch_versions = ch_versions.mix(CHEWBBACA_ALLELECALL.out.versions)    
     
-    // Extract individual allele profiles if joint calling was performed
+    // Extract individual allele profiles
     HELPER_EXTRACT_ALLELES(
         ch_metas.combine(
             CHEWBBACA_ALLELECALL.out.profile.mix(CHEWBBACA_ALLELECALL.out.hashed_profile).map { m, p -> p }
@@ -223,4 +242,22 @@ def get_schema_dir(params) {
     }
 
     return schema_dir
+}
+
+def profile_is_hashed(aFile) {
+
+    lines = file(aFile).readLines()
+    
+    alleles = lines[1]
+
+    elements = alleles.split("\t")
+
+    first = elements[1]
+
+    if (first.length() >= 8 ) {
+        return true
+    } else {
+        return false
+    }
+
 }
