@@ -10,6 +10,7 @@ process REPORT {
     input:
     tuple val(meta), path(json)
     path(template)
+    val(distance)
 
     output:
     path('*.html')          , emit: html
@@ -30,6 +31,7 @@ process REPORT {
     --version $version \
     --call '$call' \
     --wd $wd \
+    --distance $distance \
     $args \
     --output $result
 

@@ -14,7 +14,6 @@ include { CHEWBBACA_ALLELECALLEVALUATOR  }  from './../modules/chewbbaca/allelec
 /*
 Include sub workflows
 */
-// include { CHEWBBACA_ALLELECALLING }         from './../subworkflows/chewbbaca_allelecalling'
 
 workflow BELLA {
 
@@ -23,15 +22,16 @@ workflow BELLA {
     ch_multiqc_config   = params.multiqc_config   ? channel.fromPath(params.multiqc_config, checkIfExists: true).collect() : channel.value([])
     ch_multiqc_logo     = params.multiqc_logo     ? channel.fromPath(params.multiqc_logo, checkIfExists: true).collect() : channel.value([])
     ch_bella_template   = params.template         ? channel.fromPath(params.template, checkIfExists: true).collect() : channel.value([])
-    ch_profiles         = Channel.from([])
-    ch_assemblies       = Channel.from([])
-    
+    ch_profiles         = channel.from([])
+    ch_assemblies       = channel.from([])
+    distance            = params.species    ? params.references[params.species].distance : params.distance
     samplesheet         = params.input      ? channel.fromPath(params.input, checkIfExists:true ).collect()     : channel.from([])
     existing_profiles   = params.alleles    ? channel.fromPath(params.alleles, checkIfExists: true). collect()  : channel.from([])
     
     /*
     Get the corect schema to use - either from a pre-configured species or as user-provided path
-    We use this as a value since the the locking/unlocking modifies the folder
+    We use this as a value, not file, since the the locking/unlocking modifies the folder and would
+    prevent resuming without rerunning allele calling again. 
     */
     schema_dir          = get_schema_dir(params)
     if (!schema_dir) {
@@ -52,17 +52,22 @@ workflow BELLA {
 
     pipeline_info = channel.fromPath(dumpParametersToJSON(params.outdir)).collect()
 
-    /* Remove lock on database directory if requested
+    /* Check if schema directory is locked
+    and unlock if requested
     */
-    if (params.unlock) {
-        lockfile = file("${schema_dir.toString()}/bella.lock")
-        if (lockfile.exists()) {
-            log.info "Removing lock on ${schema_dir.toString()}"
+    lockfile = file("${schema_dir.toString()}/bella.lock")
+    if (lockfile.exists()) {
+        log.info "Schema directory appears locked."
+        if (params.unlock) {
+            log.info "Unlocking!"
             lockfile.delete()
         } else {
-            log.info "No lock file found, ignoring --unlock option."
+            log.info "Cannot run pipeline while schema is locked!\n"
+            log.info "If you are sure that it is safe to do so, please use --unlock"
+            System.exit(1)
         }
     }
+
     /*
     Check that the samplesheet is valid and create channels
     */
@@ -72,16 +77,32 @@ workflow BELLA {
     ch_profiles = ch_profiles.mix(INPUT_CHECK.out.profiles)
     ch_metas = ch_assemblies.map {m, a -> m }
 
+    // Check that the pre-computed profiles are hashed or unhashed
+    // as specified
+    ch_profiles.branch { m, profile ->
+        def hashed = profile_is_hashed(profile)
+        is_hashed: hashed == true
+        is_unhashed: hashed == false
+    }.set { ch_profiles_by_hashed }
+
+    if (params.hashed) {
+        ch_profiles_by_hashed.is_unhashed.subscribe { m, pro ->
+            log.warn "Requested hashed profile processing, but ${m.sample_id} appears to contain unhashed alleles!"
+        }
+    } else {
+        ch_profiles_by_hashed.is_hashed.subscribe { m, pro ->
+            log.warn "Requested unhashed profile processing, but ${m.sample_id} appears to contain hashed alleles!"
+        }
+    }
+
     /*
     Run allele calling on all new assemblies and merge with pre-existing profiles
     */
 
     // Perform allele calling on assemblies
 
-    // Optional: combine all assemblies into one calling job
-    if (params.joint_calling) {
-        ch_assemblies = ch_assemblies.map { m, a -> tuple([sample_id: params.run_name], a)}.groupTuple()
-    }
+    // Combine all assemblies into one calling job
+    ch_assemblies = ch_assemblies.map { m, a -> tuple([sample_id: params.run_name], a)}.groupTuple()
 
     CHEWBBACA_ALLELECALL(
         ch_assemblies,
@@ -89,13 +110,12 @@ workflow BELLA {
     )
     ch_versions = ch_versions.mix(CHEWBBACA_ALLELECALL.out.versions)    
     
-    if (params.joint_calling) {
-        HELPER_EXTRACT_ALLELES(
-            ch_metas.combine(
-                CHEWBBACA_ALLELECALL.out.profile.mix(CHEWBBACA_ALLELECALL.out.hashed_profile).map { m, p -> p }
-            )
+    // Extract individual allele profiles
+    HELPER_EXTRACT_ALLELES(
+        ch_metas.combine(
+            CHEWBBACA_ALLELECALL.out.profile.mix(CHEWBBACA_ALLELECALL.out.hashed_profile).map { m, p -> p }
         )
-    }
+    )
     // combine computed profiles with pre-computed profiles - hashed or unhashed
     if (params.hashed) {
         ch_profiles = ch_profiles.mix(CHEWBBACA_ALLELECALL.out.hashed_profile)
@@ -111,7 +131,7 @@ workflow BELLA {
     ch_versions = ch_versions.mix(CHEWBBACA_ALLELECALLEVALUATOR.out.versions)
 
     // Join profiles, if applicable (i.e. we have pre-computed alleles and/or the assemblies were called individually)
-    if (params.alleles || !params.joint_calling) {
+    if (params.alleles) {
         // Join allele calls across samples
         CHEWBBACA_JOINPROFILES(
             ch_profiles.map { m,r ->
@@ -174,7 +194,8 @@ workflow BELLA {
     // Generate HTML report
     REPORT(
         SUMMARY.out.json,
-        ch_bella_template
+        ch_bella_template,
+        distance
     )
     ch_versions = ch_versions.mix(REPORT.out.versions)
 
@@ -222,4 +243,22 @@ def get_schema_dir(params) {
     }
 
     return schema_dir
+}
+
+def profile_is_hashed(aFile) {
+
+    lines = file(aFile).readLines()
+    
+    alleles = lines[1]
+
+    elements = alleles.split("\t")
+
+    first = elements[1]
+
+    if (first.length() >= 8 ) {
+        return true
+    } else {
+        return false
+    }
+
 }

@@ -92,7 +92,7 @@ SampleD /path/to/sampleD/alleles_results.tsv
 
 ### `--efsa` [ default = false]
 
-Use a modified version of a pre-configured schema following [EFSA](https://www.efsa.europa.eu/en) recommendations. This is only available for select species. 
+Use a modified version of a pre-configured schema following [EFSA](https://www.efsa.europa.eu/en) recommendations. This is only available for select species (Escherichia coli, Salmonella enterica). 
 
 ### `--distance` [ default = null ]
 
@@ -101,10 +101,6 @@ A custom clustering distance to use in the graphical report (the full results ar
 ### `--hashed` [ default = null ]
 
 Specifies the use of hashed allele profiles. Please make sure that any pre-computed allele profiles you provide from the command line (`--alleles`) are also hashed, else the clustering will not work correctly. 
-
-### `--joint_calling` [default = null ]
-
-Perform allele typing for all assemblies simultaneously. This saves significant start-up time, but generates a combined result rather than one result per assembly.
 
 ### `--metadata` [default = null]
 
