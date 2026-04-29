@@ -1,43 +1,45 @@
 # Outputs 
 
-## Reports
+## Chewbbaca allele calling
 
-<details markdown=1>
-<summary>reports</summary>
+Relevant files include:
 
-BELLA generates the following outputs:
+`sample/sample_id/chewbbaca/sample_id_resuls_alleles.tsv` - The per-sample allele profile
+`sample/sample_id/chewbbaca/sample_id_resuls_alleles_hashed.tsv` -  The hashed version of the per-sample allele profile
 
-`chewbbaca` - contains results from the Chewbbaca analysis to percm cgMLST calling
-`reportree` - contains results from the ReporTree clustering analysis
-`report` - contains a graphical report of this analysis with some useful metrics and visualizations in HTML format. 
+The format in both cases is a TSV file, described [here](https://chewbbaca.readthedocs.io/en/latest/user/modules/AlleleCall.html)
 
-</details>
+Hashed profiles encode information about the underlying schema and are useful for comparisons across sites. 
 
-<details markdown=1>
-<summary>html</summary>
+## Chewbbaca QC
+
+Chewbbaca will perform a per-run QC of the allele calls. Relevant files include:
+
+`chewbbaca/evaluate_RUN_NAME/allelecall_report.html` - a graphical summary of relevant metrics described [here](https://chewbbaca.readthedocs.io/en/latest/user/modules/AlleleCallEvaluator.html)
+
+## Clustering results
+
+Clustering is performed with ReporTree and results are stored under `reportree`. The various files are documented [here](https://github.com/insapathogenomics/ReporTree/wiki/2.-Input-Output)
+
+## HTML summary
 
 Bella generates an interactive report in HTML file, summarizing the relevant per-sample metrics as well as resulting clustering using the pre-configured or user-specified clustering distance. 
 
-Summary
+### Summary
 
 ![summary](../images/bella_report_summary.png)
 
-Hamming distances
+### Hamming distances
 
 ![distances](../images/bella_report_hamming.png)
 
-Minimum spanning tree
+### Minimum spanning tree
 
 ![tree](../images/bella_report_tree.png)
 
-</details>
-
 ## Pipeline run metrics
 
-<details markdown=1>
-<summary>pipeline_info</summary>
-
-This folder contains the pipeline run metrics
+Relevant pipeline metrics and logs can be found under pipeline_info
 
 - pipeline_dag.svg - the workflow graph (only available if GraphViz is installed)
 - pipeline_report.html - the (graphical) summary of all completed tasks and their resource usage
@@ -45,4 +47,3 @@ This folder contains the pipeline run metrics
 - pipeline_timeline.html - chronological report of compute tasks and their duration
 - pipeline_trace.txt - Detailed trace log of all processes and their various metrics
 
-</details>
