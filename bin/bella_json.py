@@ -94,7 +94,7 @@ def parse_partitions(lines):
             cluster = values[i]
             sample = values.pop(0)
             this_data[sample] = cluster
-
+        print(h)
         key = h.split("-")[1].split("x")[0]
         data[key] = this_data
 
@@ -142,7 +142,6 @@ def main(yaml_file, schema, settings_json, output):
     files_in_folders = [os.path.abspath(f) for f in glob.glob("*/*")]
     for f in files_in_folders:
         files.append(f)
-    print(files)
 
     date = datetime.today().strftime('%Y-%m-%d')
 
@@ -169,6 +168,8 @@ def main(yaml_file, schema, settings_json, output):
             matrix["distance"] = parse_matrix(lines)
         elif re.search(".nwk", file):
             matrix["tree"] = "\n".join(lines)
+        elif re.search("metadata_w_partitions.tsv", file):
+            continue
         elif re.search("_partitions.tsv", file):
             matrix["clusters"] = parse_partitions(lines)
         elif re.search("loci_report.tsv", file):

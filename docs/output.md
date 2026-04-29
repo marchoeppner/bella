@@ -13,6 +13,25 @@ BELLA generates the following outputs:
 
 </details>
 
+<details markdown=1>
+<summary>html</summary>
+
+Bella generates an interactive report in HTML file, summarizing the relevant per-sample metrics as well as resulting clustering using the pre-configured or user-specified clustering distance. 
+
+Summary
+
+![summary](../images/bella_report_summary.png)
+
+Hamming distances
+
+![distances](../images/bella_report_hamming.png)
+
+Minimum spanning tree
+
+![tree](../images/bella_report_tree.png)
+
+</details>
+
 ## Pipeline run metrics
 
 <details markdown=1>

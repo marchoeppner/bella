@@ -24,7 +24,7 @@ workflow BELLA {
     ch_bella_template   = params.template         ? channel.fromPath(params.template, checkIfExists: true).collect() : channel.value([])
     ch_profiles         = channel.from([])
     ch_assemblies       = channel.from([])
-    
+    distance            = params.species    ? params.references[params.species].distance : params.distance
     samplesheet         = params.input      ? channel.fromPath(params.input, checkIfExists:true ).collect()     : channel.from([])
     existing_profiles   = params.alleles    ? channel.fromPath(params.alleles, checkIfExists: true). collect()  : channel.from([])
     
@@ -194,7 +194,8 @@ workflow BELLA {
     // Generate HTML report
     REPORT(
         SUMMARY.out.json,
-        ch_bella_template
+        ch_bella_template,
+        distance
     )
     ch_versions = ch_versions.mix(REPORT.out.versions)
 

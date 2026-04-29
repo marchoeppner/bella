@@ -92,7 +92,7 @@ SampleD /path/to/sampleD/alleles_results.tsv
 
 ### `--efsa` [ default = false]
 
-Use a modified version of a pre-configured schema following [EFSA](https://www.efsa.europa.eu/en) recommendations. This is only available for select species. 
+Use a modified version of a pre-configured schema following [EFSA](https://www.efsa.europa.eu/en) recommendations. This is only available for select species (Escherichia coli, Salmonella enterica). 
 
 ### `--distance` [ default = null ]
 
