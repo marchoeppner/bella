@@ -10,6 +10,7 @@ workflow BUILD_REFERENCES {
     def assemblies = []
     def final_schemas = []
 
+    // Get a list of species from chewieNS
     def species_list = get_species_list()
 
     /* 

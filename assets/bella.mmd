@@ -1,0 +1,55 @@
+%%metro title: Bella Pipeline
+%%metro style: light
+%%metro line: main | Main | #1e9b05
+%%metro line: alt | Alt | #167204 | dashed
+%%metro line: qc | Quality Control | #2196F3 | dashed
+
+subgraph allele_calling [Allele Calling]
+
+    %%metro exit: bottom | qc
+    %%metro exit: right | main
+
+    allele_call[Allele Call]
+    extract_alleles[Extract Alleles]
+    evaluator[Allele Call Evaluator]
+    join_profiles[Join Profiles]
+    extract_cgmlst[Extract cgMLST]
+
+    allele_call -->|qc| extract_alleles
+    allele_call -->|qc| evaluator
+    allele_call -->|alt| join_profiles
+    join_profiles -->|alt| extract_cgmlst
+    allele_call -->|main| extract_cgmlst
+
+end
+
+subgraph clustering [Clustering]
+
+    reportree[ReporTree]
+
+end
+
+subgraph report [Reporting]
+
+    %%metro entry: bottom | qc
+    %%metro entry: left | main
+
+    logs[Logs]
+    json[JSON]
+    html[HTML]
+
+    logs -->|qc| json
+    json -->|main| html
+
+end
+
+input[Assemblies]
+alleles[Profiles]
+
+
+input -->|main| allele_call
+alleles -->|alt| join_profiles
+extract_cgmlst -->|main| reportree
+evaluator -->|qc| logs
+extract_alleles -->|qc| logs 
+reportree -->|main| json
