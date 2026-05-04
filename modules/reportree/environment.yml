@@ -4,7 +4,7 @@ channels:
   - etetoolkit
   - anaconda
   - bioconda
-  - defaults
+  
   - insapathogenomics
 dependencies:
   - biopython=1.77
