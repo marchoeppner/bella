@@ -1,7 +1,6 @@
-name: chewbbaca_prepareexternalschema
+name: chewbbaca_schemaevaluator
 channels:
   - conda-forge
   - bioconda
-  
 dependencies:
   - bioconda::chewbbaca=3.3.10

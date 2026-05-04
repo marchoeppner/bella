@@ -189,8 +189,8 @@ def main(json_file, template, output, version, call, wd, distance, cutoff):
                     x=matrix["x"],
                     y=matrix["y"]
                     )
-    fig.layout.height = len(matrix["x"]) * 40 if len(matrix["x"]) < 40 else 800
-    fig.layout.width = len(matrix["x"]) * 40 if len(matrix["x"]) < 40 else 1500
+    fig.layout.height = len(matrix["x"]) * 50 if len(matrix["x"]) < 40 else 800
+    fig.layout.width = len(matrix["x"]) * 50 if len(matrix["x"]) < 40 else 1500
 
     data["distances"] = fig.to_html(full_html=False)
 
