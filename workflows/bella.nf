@@ -10,6 +10,7 @@ include { CHEWBBACA_ALLELECALL }            from './../modules/chewbbaca/allelec
 include { CHEWBBACA_JOINPROFILES }          from './../modules/chewbbaca/joinprofiles'
 include { CHEWBBACA_EXTRACTCGMLST }         from './../modules/chewbbaca/extractcgmlst'
 include { CHEWBBACA_ALLELECALLEVALUATOR  }  from './../modules/chewbbaca/allelecallevaluator'
+include { CHEWBBACA_SCHEMAEVALUATOR  }      from './../modules/chewbbaca/schemaevaluator'
 
 /*
 Include sub workflows
@@ -110,6 +111,11 @@ workflow BELLA {
     )
     ch_versions = ch_versions.mix(CHEWBBACA_ALLELECALL.out.versions)    
     
+    // Create stats from the schema after adding the new samples
+    CHEWBBACA_SCHEMAEVALUATOR(
+        CHEWBBACA_ALLELECALL.out.profile.map { m, p -> tuple(m,schema_dir)}
+    )
+
     // Extract individual allele profiles
     HELPER_EXTRACT_ALLELES(
         ch_metas.combine(

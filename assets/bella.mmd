@@ -3,6 +3,10 @@
 %%metro line: main | Main | #1e9b05
 %%metro line: alt | Alt | #167204 | dashed
 %%metro line: qc | Quality Control | #2196F3 | dashed
+%%metro file: input | TSV
+%%metro file: alleles | TSV
+%%metro file: html | HTML
+%%metro file: json | JSON
 
 subgraph allele_calling [Allele Calling]
 
@@ -35,8 +39,8 @@ subgraph report [Reporting]
     %%metro entry: left | main
 
     logs[Logs]
-    json[JSON]
-    html[HTML]
+    json[ ]
+    html[ ]
 
     logs -->|qc| json
     json -->|main| html

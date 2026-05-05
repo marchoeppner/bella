@@ -17,6 +17,12 @@ Chewbbaca will perform a per-run QC of the allele calls. Relevant files include:
 
 `chewbbaca/evaluate_RUN_NAME/allelecall_report.html` - a graphical summary of relevant metrics described [here](https://chewbbaca.readthedocs.io/en/latest/user/modules/AlleleCallEvaluator.html)
 
+## Schema stats
+
+The pipeline will compute a simple summary of the schema used. This information may be used to check that the schema looks OK and does not contain problems.
+
+`chewbbaca/schema_stats/schema_report.html`
+
 ## Clustering results
 
 Clustering is performed with ReporTree and results are stored under `reportree`. The various files are documented [here](https://github.com/insapathogenomics/ReporTree/wiki/2.-Input-Output)
