@@ -1,6 +1,6 @@
 process CHEWBBACA_SCHEMAEVALUATOR {
 
-    tag "${meta.sample_id}|${filter}"
+    tag "${meta.sample_id}|${schema}"
 
     label 'short_parallel'
 
