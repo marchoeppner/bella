@@ -12,7 +12,7 @@ process REPORTREE {
 
     output:
     tuple val(meta), path('*partitions_summary.tsv')    , optional: true, emit: summary
-    tuple val(meta), path("${meta.sample_id}_partitions.tsv")      , emit: partitions
+    tuple val(meta), path("${meta.sample_id}_partitions.tsv"), optional: true, emit: partitions
     tuple val(meta), path('*metadata_w_partitions.tsv')            , emit: partitions_with_meta
     tuple val(meta), path('*metrics.tsv')               , optional: true, emit: metrics
     tuple val(meta), path('*nomenclature_changes.tsv')  , optional: true, emit: nomenclature_changes

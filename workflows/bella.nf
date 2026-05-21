@@ -253,13 +253,13 @@ def get_schema_dir(params) {
 
 def profile_is_hashed(aFile) {
 
-    lines = file(aFile).readLines()
+    def lines = file(aFile).readLines()
     
-    alleles = lines[1]
+    def alleles = lines[1]
 
-    elements = alleles.split("\t")
+    def elements = alleles.split("\t")
 
-    first = elements[1]
+    def first = elements[1]
 
     if (first.length() >= 8 ) {
         return true
