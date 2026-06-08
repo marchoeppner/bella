@@ -12,4 +12,4 @@ Assemblies are profiled using Chewbbaca against a reference schema, subsequently
 
 The cleaned distance matrix is used to compute clusters and relevant metrics using ReporTree. 
 
-3. Results and relevant metrics are summarized in JSON format, and compined into a graphical report in HTML format. 
+3. Results and relevant metrics are summarized in JSON format, and combined into a graphical report in HTML format. 
