@@ -39,7 +39,7 @@ workflow BELLA {
         log.info "No schema defined - exiting!"
         System.exit(1)
     } else {
-        schema_file = file(schema_dir, checkIfExists: true)
+        // schema_file = file(schema_dir, checkIfExists: true)
     }
     
     ch_nomenclature     = params.nomenclature ? file(params.nomenclature, checkIfExists: true) : channel.from(false)
@@ -76,22 +76,22 @@ workflow BELLA {
 
     ch_assemblies = ch_assemblies.mix(INPUT_CHECK.out.assembly)
     ch_profiles = ch_profiles.mix(INPUT_CHECK.out.profiles)
-    ch_metas = ch_assemblies.map {m, a -> m }
+    ch_metas = ch_assemblies.map {m,_a -> m }
 
     // Check that the pre-computed profiles are hashed or unhashed
     // as specified
-    ch_profiles.branch { m, profile ->
+    ch_profiles.branch { _m,profile ->
         def hashed = profile_is_hashed(profile)
         is_hashed: hashed == true
         is_unhashed: hashed == false
     }.set { ch_profiles_by_hashed }
 
     if (params.hashed) {
-        ch_profiles_by_hashed.is_unhashed.subscribe { m, pro ->
+        ch_profiles_by_hashed.is_unhashed.subscribe { m,_pro ->
             log.warn "Requested hashed profile processing, but ${m.sample_id} appears to contain unhashed alleles!"
         }
     } else {
-        ch_profiles_by_hashed.is_hashed.subscribe { m, pro ->
+        ch_profiles_by_hashed.is_hashed.subscribe { m,_pro ->
             log.warn "Requested unhashed profile processing, but ${m.sample_id} appears to contain hashed alleles!"
         }
     }
@@ -103,7 +103,7 @@ workflow BELLA {
     // Perform allele calling on assemblies
 
     // Combine all assemblies into one calling job
-    ch_assemblies = ch_assemblies.map { m, a -> tuple([sample_id: params.run_name], a)}.groupTuple()
+    ch_assemblies = ch_assemblies.map { _m,a -> tuple([sample_id: params.run_name], a)}.groupTuple()
 
     CHEWBBACA_ALLELECALL(
         ch_assemblies,
@@ -113,13 +113,13 @@ workflow BELLA {
     
     // Create stats from the schema after adding the new samples
     CHEWBBACA_SCHEMAEVALUATOR(
-        CHEWBBACA_ALLELECALL.out.profile.map { m, p -> tuple(m,schema_dir)}
+        CHEWBBACA_ALLELECALL.out.profile.map { m,_p -> tuple(m,schema_dir)}
     )
-
+        
     // Extract individual allele profiles
     HELPER_EXTRACT_ALLELES(
         ch_metas.combine(
-            CHEWBBACA_ALLELECALL.out.profile.mix(CHEWBBACA_ALLELECALL.out.hashed_profile).map { m, p -> p }
+            CHEWBBACA_ALLELECALL.out.profile.mix(CHEWBBACA_ALLELECALL.out.hashed_profile).map { _m,p -> p }
         )
     )
     // combine computed profiles with pre-computed profiles - hashed or unhashed
@@ -140,7 +140,7 @@ workflow BELLA {
     if (params.alleles) {
         // Join allele calls across samples
         CHEWBBACA_JOINPROFILES(
-            ch_profiles.map { m,r ->
+            ch_profiles.map { _m,r ->
                 [[ sample_id: params.run_name ], r]
             }.groupTuple()
         )
@@ -160,7 +160,7 @@ workflow BELLA {
     ch_chewie_stats = ch_chewie_stats.mix(CHEWBBACA_ALLELECALL.out.stats)
     ch_chewie_stats = ch_chewie_stats.mix(CHEWBBACA_ALLELECALL.out.logs)
     
-    ch_chewie_stats.map { m ,s ->
+    ch_chewie_stats.map { _m,s ->
         tuple([sample_id: params.run_name], s)
     }.set { ch_grouped_stats }
 
@@ -253,13 +253,13 @@ def get_schema_dir(params) {
 
 def profile_is_hashed(aFile) {
 
-    lines = file(aFile).readLines()
+    def lines = file(aFile).readLines()
     
-    alleles = lines[1]
+    def alleles = lines[1]
 
-    elements = alleles.split("\t")
+    def elements = alleles.split("\t")
 
-    first = elements[1]
+    def first = elements[1]
 
     if (first.length() >= 8 ) {
         return true

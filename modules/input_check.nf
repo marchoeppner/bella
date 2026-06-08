@@ -51,8 +51,7 @@ def assembly_channel(LinkedHashMap row) {
             exit 1, "ERROR: Please check input samplesheet -> the assembly does not exist!\n${row.assembly}"
         }
   
-        def array = [ meta, file(row.assembly) ]
-        return array
+        return [ meta, file(row.assembly, checkIfExists: true) ]
     }
 
 }

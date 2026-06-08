@@ -9,7 +9,7 @@
 
 ![schema](images/bella.png)
 
-This pipeline takes assembled bacterial genomes (as well as previously computed allele profiles) as input and performs a clustering analysis to support epidemiological inqueries into outbreak scenarios. It uses [Chewbbaca](https://chewbbaca.readthedocs.io/en/latest/) to perform cgMLST calling and then reconstructs the relationship of your samples with [ReporTree](https://github.com/insapathogenomics/ReporTree). ReporTree performs clustering of samples using a range of (pre-configured) distances, so makes it easy to explore the data across a range of clustering thresholds. ReporTree additionally allows you to feed your own nomenclature and metadata into the analysis. 
+This pipeline takes assembled bacterial genomes (as well as previously computed allele profiles) as input and performs a clustering analysis to support epidemiological inqueries into outbreak scenarios. It uses [Chewbbaca](https://chewbbaca.readthedocs.io/en/latest/) to perform cgMLST calling and then reconstructs the relationship of your samples with [ReporTree](https://github.com/insapathogenomics/ReporTree). ReporTree performs clustering of samples using a range of (pre-configured) distances, so makes it easy to explore the data across a range of clustering thresholds. ReporTree additionally allows you to feed your own nomenclature and metadata into the analysis to annotate the results. 
 
 BELLA is primarily meant to be used with foodborne pathogens, such as *Campylobacter jejuni*, *E. coli*, *Listeria monocytogenes* and *Salmonella enteria* (i.e. it comes with allele schemas for these four species). Other species are supported of course, if you provide a compatible schema database (Chewbbaca v3.3x).
 

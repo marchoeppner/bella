@@ -59,7 +59,7 @@ workflow BUILD_REFERENCES {
         ch_assemblies
     )
 
-    CHEWBBACA_DOWNLOADSCHEMA.out.schema.map { m, s, t ->
+    CHEWBBACA_DOWNLOADSCHEMA.out.schema.map { m,s,_t ->
         tuple(m,s)
     }.concat(
         CHEWBBACA_PREPEXTERNALSCHEMA.out.filtered_schema
