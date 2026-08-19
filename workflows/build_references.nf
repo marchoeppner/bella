@@ -7,7 +7,6 @@ workflow BUILD_REFERENCES {
 
     def schemas = []
     def filters = []
-    def assemblies = []
     def final_schemas = []
 
     // Get a list of species from chewieNS
@@ -20,7 +19,6 @@ workflow BUILD_REFERENCES {
         def species = params.references[k].species
         if (species_list[species]) {
             schemas << [ [ sample_id: k] , species_list[species], params.references[k].schema_id ]
-            assemblies << [ [ sample_id: k], file(params.references[k].ref) ]
             final_schemas << [ [ sample_id: k], file(params.references[k].db)]
             if (params.references[k].filter ) {
                 filters << [ [ sample_id: k], params.references[k].filter ]
@@ -34,7 +32,6 @@ workflow BUILD_REFERENCES {
     ch_schemas = channel.fromList(schemas)
     ch_filters = channel.fromList(filters)
     //ch_filters = channel.empty()
-    ch_assemblies = channel.fromList(assemblies)
 
     // Download the schema by id
     CHEWBBACA_DOWNLOADSCHEMA(
@@ -48,34 +45,13 @@ workflow BUILD_REFERENCES {
 
     /* Reformat the schema to limit loci to the filter list
     We do this to use the built-in filter function instead of
-    manually filtering the locus list
+    manually filtering the locus list. This also accepts 2-column
+    filter lists and will rename loci based on column 2.
     */
     CHEWBBACA_PREPEXTERNALSCHEMA(
         schema_with_filter
     )
 
-    // decompress assemblies
-    GUNZIP(
-        ch_assemblies
-    )
-
-    CHEWBBACA_DOWNLOADSCHEMA.out.schema.map { m,s,_t ->
-        tuple(m,s)
-    }.concat(
-        CHEWBBACA_PREPEXTERNALSCHEMA.out.filtered_schema
-    ).set { ch_processed_schemas }
-
-
-    /*
-    We combine all the schemas with the assemblies based on matching keys
-    and then run each assembly against each schema to seed it for subsequent use
-    */
-
-    ch_schema_with_assemblies = GUNZIP.out.gunzip.combine(ch_processed_schemas, by: 0)
-   
-    CHEWBBACA_ALLELECALL_INSTALL(
-        ch_schema_with_assemblies
-    )
 }
 
 def get_species_list() {

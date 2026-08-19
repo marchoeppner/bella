@@ -28,6 +28,10 @@ process CHEWBBACA_PREPEXTERNALSCHEMA {
     --cpu ${task.cpus} \\
     -o ${sname} $args
 
+    # Rename alleles if the filter list has two columns old<->new to fix any
+    # locus name changes
+    chewbbaca_rename_alleles.py --input $filter --folder $sname
+
     cat <<-END_VERSIONS > versions.yml
     "${task.process}":
         chewBBACA: \$(chewBBACA.py --version 2>&1 | sed -e "s/*.version: //g")
